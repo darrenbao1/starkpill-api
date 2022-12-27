@@ -1,0 +1,41 @@
+services:
+  starkpill-postgres:
+    container_name: starkpill-postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+    volumes:
+      - ./.postgres:/data/postgres
+    ports:
+      - '5432:5432'
+    networks:
+      - starkpill-network
+    restart: unless-stopped
+  starkpill-redis:
+    image: redis:alpine
+    volumes:
+      - ./.redis:/data
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
+    restart: always
+  #starkpill-api:
+  #  container_name: starkpill-api
+  #  build:
+  #    context: "."
+  #    dockerfile: Dockerfile
+  #  ports:
+  #    - "8000:8000"
+  #  volumes:
+  #    - .:/usr/src/app
+  #    - /usr/src/app/node_modules
+  #  depends_on:
+  #    - starkpill-postgres
+  #  networks:
+  #    - starkpill-network
+
+networks:
+  starkpill-network:
+    driver: bridge
