@@ -1,3 +1,6 @@
+// !: Custom checks were manually added to the migration file as the prisma migrate tool does not support custom checks yet
+// !: First check is for the metadata table, which should only have 1 row, 
+// !: Second check is for the event table that the eventType should have the right NULL and NOT NULL values
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -8,10 +11,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Event {
+  transactionHash String    @id
+  to              String // the address of the user
+  tokenId         Int
+  blockNumber     Int
+  timestamp       DateTime
+  eventType       EventType
+
+  // for minting only
+  mintPrice Int?
+
+  // for minting and changing attribute
+  background String?
+  ingredient String?
+
+  // for transfer only
+  from String?
+}
+
+// Should only have 1 row
+model metadata {
+  id           Int @id @default(1)
+  lastIndexed  Int // will return a still indexing error if more than 5 blocks behind the currentBlock
+  currentBlock Int // get starting currentBlock from infura, otherwise start from lastIndexed
+}
+
+// 3 types of trxn: mint transfer, change attribute
+
+enum EventType {
+  MINT
+  TRANSFER
+  CHANGE_ATTRIBUTE
 }
