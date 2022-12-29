@@ -5,6 +5,7 @@ import Redis from 'ioredis';
 import { AppController } from './app.controller';
 import { GraphqlModule } from './graphql/graphql.module';
 import { BlocksModule } from './queues/blocks/blocks.module';
+import { QueuesModule } from './queues/queues.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BlocksModule } from './queues/blocks/blocks.module';
     }),
     GraphqlModule,
     BlocksModule,
+    QueuesModule,
   ],
   controllers: [AppController],
 })

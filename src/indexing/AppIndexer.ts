@@ -98,21 +98,21 @@ export class AppIndexer {
   }
 
   // Unused as we destroy the stream and create a new one
-  // onRetry(retryCount: number) {
-  //   // retry connecting up to 3 times, with a delay of 5 seconds in between
-  //   // retries.
-  //   // Start from the sequence number _following_ the last received message.
-  //   const retry = retryCount < 3;
-  //   const startingSequence = this.currentSequence
-  //     ? +this.currentSequence + 1
-  //     : undefined;
+  onRetry(retryCount: number) {
+    // retry connecting up to 3 times, with a delay of 1 seconds in between
+    // retries.
+    // Start from the sequence number _following_ the last received message.
+    const retry = retryCount < 3;
+    const startingSequence = this.currentSequence
+      ? +this.currentSequence + 1
+      : undefined;
 
-  //   console.log(
-  //     `[retry] retry=${
-  //       retry ? 'yes' : 'no'
-  //     }, startingSequence=${startingSequence}`,
-  //   );
+    console.log(
+      `[retry] retry=${
+        retry ? 'yes' : 'no'
+      }, startingSequence=${startingSequence}`,
+    );
 
-  //   return { retry, delay: 0.1, startingSequence };
-  // }
+    return { retry, delay: 1, startingSequence };
+  }
 }

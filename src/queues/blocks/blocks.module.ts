@@ -10,6 +10,7 @@ import {
 } from '@apibara/protocol';
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import { EventType } from '@prisma/client';
+import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
 
 @Module({
   imports: [
@@ -27,6 +28,8 @@ export class BlocksModule {
   private messages: StreamMessagesStream;
   private node: NodeClient;
 
+  private takesTooLongTimeout: NodeJS.Timeout;
+
   private createStream(initialBlock: number) {
     this.indexer = new AppIndexer();
 
@@ -35,9 +38,10 @@ export class BlocksModule {
       credentials.createSsl(),
     );
 
-    this.messages = this.node.streamMessages({
-      startingSequence: initialBlock,
-    });
+    this.messages = this.node.streamMessages(
+      { startingSequence: initialBlock },
+      { onRetry: this.indexer.onRetry, reconnect: true },
+    );
 
     this.messages.on('end', (msg: any) => {
       console.log(msg);
@@ -54,6 +58,15 @@ export class BlocksModule {
 
     this.messages.on('data', (msg) => {
       if (msg.data) {
+        clearTimeout(this.takesTooLongTimeout);
+        // ensure that the stream doesn't get stuck
+        this.takesTooLongTimeout = setTimeout(() => {
+          console.log('restarting because it took too long');
+          this.messages.destroy();
+          this.messages.cleanupSource();
+          this.createStream(initialBlock); // change to last indexed block + 1
+        }, RESTART_STREAM_AFTER);
+
         const indexedData = this.indexer.handleData(msg.data);
         if (!indexedData) return;
 
@@ -65,6 +78,6 @@ export class BlocksModule {
   }
 
   onModuleInit() {
-    this.createStream(563710);
+    this.createStream(564469);
   }
 }

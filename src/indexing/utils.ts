@@ -14,6 +14,8 @@ export const CONTRACT_ADDRESS =
 export const NULL_FELT =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
+export const RESTART_STREAM_AFTER = 2 * 60 * 1000; // Restart the stream if no block has been received after 2min
+
 export const uint8ToString = (uint8Arr: Uint8Array) => {
   let result = '0x';
   for (const letter of uint8Arr) {
