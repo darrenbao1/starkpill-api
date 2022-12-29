@@ -17,7 +17,6 @@ model metadata {
 }
 
 // 3 types of trxn: mint transfer, change attribute
-// !: The values are used in the type IndexBlockData so if this is changed, that needs to be changed as well
 enum EventType {
   MINT
   TRANSFER

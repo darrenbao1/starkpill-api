@@ -1,5 +1,9 @@
-import { EventType } from '@prisma/client';
 import { hash } from 'starknet';
+
+export enum EventName {
+  Prescription_Updated = 'PrescriptionUpdated',
+  Transfer = 'Transfer',
+}
 
 export const PRESCRIPTION_UPDATED_KEY =
   '0x' +
@@ -24,41 +28,12 @@ export const uint8ToString = (uint8Arr: Uint8Array) => {
   return result;
 };
 
-export const getEventType = (eventKey: string, eventData: string[]) => {
-  const data = eventData.map((d) => parseInt(d, 16).toString());
-
-  // mint or change attributes
-  if (eventKey === PRESCRIPTION_UPDATED_KEY) {
-    // for PrescriptionUpdated, index 2 and 4 are skipped because felt takes up 2 slots
-    const [, , , , , oldIng, , oldBG, , , , , ,] = data;
-
-    // if oldIng and oldBG are both 0, then it's a mint
-    // !: This is problematic as the user may not have equipped either of the attributes, so both are '0' even though it's not a mint
-    // TODO: Solution: In the mint handler in service, check if the tokenId alr exists, if so, take it as a change of attributes instead of mint
-    if (oldIng === '0' && oldBG === '0') {
-      return EventType.MINT;
-    }
-
-    return EventType.CHANGE_ATTRIBUTE;
-  } else if (eventKey === TRANSFER_KEY) {
-    return EventType.TRANSFER;
-  }
-  throw 'invalid event key';
-};
-
-export const decodeMint = (eventData: string[]) => {
+export const decodePrescriptionUpdated = (eventData: string[]) => {
   const data = eventData.map((d) => parseInt(d, 16));
   const owner = eventData[0];
-  // for PrescriptionUpdated, index 2 and 4 are skipped because felt takes up 2 slots
-  const [, tokenId, , mintPrice, , , , , , ing, , bg, ,] = data;
+  const [, tokenId, , mintPrice, , oldIng, , oldBG, , newIng, , newBG] = data;
 
-  return {
-    owner,
-    tokenId,
-    mintPrice,
-    ing,
-    bg,
-  };
+  return { owner, tokenId, mintPrice, oldIng, oldBG, newIng, newBG };
 };
 
 export const decodeTransfer = (eventData: string[]) => {
@@ -70,14 +45,6 @@ export const decodeTransfer = (eventData: string[]) => {
   };
 };
 
-export const decodeChangeAttributes = (eventData: string[]) => {
-  const data = eventData.map((d) => parseInt(d, 16));
-  const owner = eventData[0];
-  const [, tokenId, , , , oldIng, , oldBG, , newIng, , newBG, ,] = data;
-
-  return { owner, tokenId, oldIng, oldBG, newIng, newBG };
-};
-
 interface TrxnData {
   tokenId: number;
   timestamp: Date;
@@ -85,15 +52,9 @@ interface TrxnData {
   trxnHash: string;
 }
 
-export interface MintData extends TrxnData {
+export interface PrescriptionUpdatedData extends TrxnData {
   owner: string;
   mintPrice: number;
-  ing: number;
-  bg: number;
-}
-
-export interface ChangeAttributeData extends TrxnData {
-  owner: string;
   oldIng: number;
   oldBG: number;
   newIng: number;
@@ -106,6 +67,5 @@ export interface TransferData extends TrxnData {
 }
 
 export type IndexBlockData =
-  | { data: ChangeAttributeData; eventType: 'CHANGE_ATTRIBUTE' }
-  | { data: MintData; eventType: 'MINT' }
-  | { data: TransferData; eventType: 'TRANSFER' };
+  | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
+  | { data: TransferData; eventType: EventName.Transfer };

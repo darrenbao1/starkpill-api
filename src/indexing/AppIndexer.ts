@@ -1,20 +1,18 @@
 import { proto } from '@apibara/protocol';
 import { Block } from '@apibara/starknet';
-import { EventType } from '@prisma/client';
+
 import {
-  ChangeAttributeData,
-  MintData,
   TransferData,
   CONTRACT_ADDRESS,
-  decodeChangeAttributes,
-  decodeMint,
   decodeTransfer,
-  getEventType,
   NULL_FELT,
   PRESCRIPTION_UPDATED_KEY,
   TRANSFER_KEY,
   uint8ToString,
   IndexBlockData,
+  decodePrescriptionUpdated,
+  PrescriptionUpdatedData,
+  EventName,
 } from './utils';
 
 /**
@@ -25,7 +23,7 @@ export class AppIndexer {
   // protobuf encodes possibly-large numbers as strings
   private currentSequence?: string;
 
-  handleData(data: proto.Data__Output): IndexBlockData {
+  handleData(data: proto.Data__Output): IndexBlockData[] {
     // track sequence number for reconnecting later
     this.currentSequence = data.sequence;
     if (!data.data?.value) {
@@ -33,10 +31,9 @@ export class AppIndexer {
     }
     const block = Block.decode(data.data.value);
     console.log('Block Number: ' + block.blockNumber);
+    const eventsArr: IndexBlockData[] = [];
 
     for (const trxn of block.transactionReceipts) {
-      // console.log('Transaction Hash: ' + uint8ToString(trxn.transactionHash));
-
       for (const event of trxn.events) {
         if (!event.keys[0] || !event.fromAddress || !event.data[0]) {
           continue;
@@ -48,9 +45,10 @@ export class AppIndexer {
         const wrongContract = eventSource !== CONTRACT_ADDRESS;
         const wrongEvent =
           eventKey !== PRESCRIPTION_UPDATED_KEY && eventKey !== TRANSFER_KEY;
+        // ignore if transferred from contract or a null address
         const irrelevantTransfer =
           eventKey === TRANSFER_KEY &&
-          uint8ToString(event.data[0]) === NULL_FELT;
+          [NULL_FELT, CONTRACT_ADDRESS].includes(uint8ToString(event.data[0]));
 
         if (wrongContract || wrongEvent || irrelevantTransfer) {
           continue;
@@ -61,35 +59,39 @@ export class AppIndexer {
         const trxnHash = uint8ToString(trxn.transactionHash);
 
         // TODO: Add a new event type of change prescription when the old prescription is null
-        const eventType = getEventType(eventKey, eventData);
+        const eventType =
+          eventKey === PRESCRIPTION_UPDATED_KEY
+            ? EventName.Prescription_Updated
+            : EventName.Transfer;
         const commonData = { timestamp, blockNumber, trxnHash };
 
-        if (eventType === EventType.MINT) {
-          return {
-            eventType,
-            data: { ...decodeMint(eventData), ...commonData } as MintData,
-          };
-        } else if (eventType === EventType.CHANGE_ATTRIBUTE) {
-          return {
+        // once an event is found, add it to the array and continue to the next trxn as each trxn only has one indexed event
+        // e.g. a mint event also has transfer events, but will be ignored
+        if (eventType === EventName.Prescription_Updated) {
+          eventsArr.push({
             eventType,
             data: {
-              ...decodeChangeAttributes(eventData),
+              ...decodePrescriptionUpdated(eventData),
               ...commonData,
-            } as ChangeAttributeData,
-          };
-        } else if (eventType === EventType.TRANSFER) {
-          return {
+            } as PrescriptionUpdatedData,
+          });
+
+          continue;
+        } else if (eventType === EventName.Transfer) {
+          eventsArr.push({
             eventType,
             data: {
               ...decodeTransfer(eventData),
               ...commonData,
             } as TransferData,
-          };
-        }
+          });
 
-        return null;
+          continue;
+        }
       }
     }
+
+    return eventsArr;
   }
 
   handleInvalidate(invalidate: proto.Invalidate__Output) {

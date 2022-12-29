@@ -67,10 +67,12 @@ export class BlocksModule {
           this.createStream(initialBlock); // change to last indexed block + 1
         }, RESTART_STREAM_AFTER);
 
-        const indexedData = this.indexer.handleData(msg.data);
-        if (!indexedData) return;
+        const indexedDataArr = this.indexer.handleData(msg.data);
+        if (!indexedDataArr || indexedDataArr.length === 0) return;
 
-        this.blocksService.indexBlockData(indexedData);
+        indexedDataArr.forEach((data) =>
+          this.blocksService.indexBlockData(data),
+        );
       } else if (msg.invalidate) {
         this.indexer.handleInvalidate(msg.invalidate);
       }
@@ -78,6 +80,6 @@ export class BlocksModule {
   }
 
   onModuleInit() {
-    this.createStream(564469);
+    this.createStream(520700);
   }
 }
