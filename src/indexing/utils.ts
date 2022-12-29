@@ -1,3 +1,4 @@
+import { EventType } from '@prisma/client';
 import { hash } from 'starknet';
 
 export const PRESCRIPTION_UPDATED_KEY =
@@ -19,4 +20,56 @@ export const uint8ToString = (uint8Arr: Uint8Array) => {
     result = result.concat(letter.toString(16).padStart(2, '0'));
   }
   return result;
+};
+
+export const getEventType = (eventKey: string, eventData: string[]) => {
+  const data = eventData.map((d) => parseInt(d, 16).toString());
+
+  // mint or change attributes
+  if (eventKey === PRESCRIPTION_UPDATED_KEY) {
+    // for PrescriptionUpdated, index 2 and 4 are skipped because felt takes up 2 slots
+    const [, , , , , oldIng, , oldBG, , , , , ,] = data;
+
+    // if oldIng and oldBG are both 0, then it's a mint
+    if (oldIng === '0' && oldBG === '0') {
+      return EventType.MINT;
+    }
+
+    return EventType.CHANGE_ATTRIBUTE;
+  } else if (eventKey === TRANSFER_KEY) {
+    return EventType.TRANSFER;
+  }
+  throw 'invalid event key';
+};
+
+export const decodeMint = (eventData: string[]) => {
+  const data = eventData.map((d) => parseInt(d, 16));
+  const owner = eventData[0];
+  // for PrescriptionUpdated, index 2 and 4 are skipped because felt takes up 2 slots
+  const [, tokenId, , mintPrice, , , , , , ing, , bg, ,] = data;
+
+  return {
+    owner,
+    tokenId,
+    mintPrice,
+    ing,
+    bg,
+  };
+};
+
+export const decodeTransfer = (eventData: string[]) => {
+  const [from, to, tokenId] = eventData;
+  return {
+    from,
+    to,
+    tokenId: parseInt(tokenId, 16),
+  };
+};
+
+export const decodeChangeAttributes = (eventData: string[]) => {
+  const data = eventData.map((d) => parseInt(d, 16));
+  const owner = eventData[0];
+  const [, tokenId, , , , oldIng, , oldBG, , newIng, , newBG, ,] = data;
+
+  return { owner, tokenId, oldIng, oldBG, newIng, newBG };
 };

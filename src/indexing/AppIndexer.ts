@@ -3,6 +3,10 @@ import { Block } from '@apibara/starknet';
 import { EventType } from '@prisma/client';
 import {
   CONTRACT_ADDRESS,
+  decodeChangeAttributes,
+  decodeMint,
+  decodeTransfer,
+  getEventType,
   NULL_FELT,
   PRESCRIPTION_UPDATED_KEY,
   TRANSFER_KEY,
@@ -30,39 +34,52 @@ export class AppIndexer {
       // console.log('Transaction Hash: ' + uint8ToString(trxn.transactionHash));
 
       for (const event of trxn.events) {
+        if (!event.keys[0] || !event.fromAddress || !event.data[0]) {
+          continue;
+        }
         const eventKey = uint8ToString(event.keys[0]);
+        const eventSource = uint8ToString(event.fromAddress);
+        const eventData = event.data.map((d) => uint8ToString(d));
 
-        // Not emitted by our contract
-        if (uint8ToString(event.fromAddress) !== CONTRACT_ADDRESS) continue;
-
-        // Not a Transfer or PrescriptionUpdated event
-        if (eventKey !== PRESCRIPTION_UPDATED_KEY && eventKey !== TRANSFER_KEY)
-          continue;
-
-        // Not a Transfer event with a null from field as this is a minting event
-        if (
+        const wrongContract = eventSource !== CONTRACT_ADDRESS;
+        const wrongEvent =
+          eventKey !== PRESCRIPTION_UPDATED_KEY && eventKey !== TRANSFER_KEY;
+        const irrelevantTransfer =
           eventKey === TRANSFER_KEY &&
-          uint8ToString(event.data[0]) === NULL_FELT
-        )
+          uint8ToString(event.data[0]) === NULL_FELT;
+
+        if (wrongContract || wrongEvent || irrelevantTransfer) {
           continue;
+        }
+
+        const timestamp = block.timestamp;
+        const blockNumber = block.blockNumber;
+        const trxnHash = uint8ToString(trxn.transactionHash);
 
         // TODO: Add a new event type of change prescription when the old prescription is null
-        console.log({
-          eventType:
-            eventKey === PRESCRIPTION_UPDATED_KEY
-              ? EventType.MINT
-              : EventType.TRANSFER,
-          fromAddress: uint8ToString(event.fromAddress),
-          keys: event.keys.map((k) => uint8ToString(k)),
-          data: event.data.map((d) => uint8ToString(d)),
-        });
+        const eventType = getEventType(eventKey, eventData);
+        const commonData = { timestamp, blockNumber, trxnHash };
+
+        if (eventType === EventType.MINT) {
+          return {
+            eventType,
+            data: { ...decodeMint(eventData), ...commonData },
+          };
+        } else if (eventType === EventType.CHANGE_ATTRIBUTE) {
+          return {
+            eventType,
+            data: { ...decodeChangeAttributes(eventData), ...commonData },
+          };
+        } else if (eventType === EventType.TRANSFER) {
+          return {
+            eventType,
+            data: { ...decodeTransfer(eventData), ...commonData },
+          };
+        }
+
+        return null;
       }
     }
-    // const blockHash = uint8ToString(block?.blockHash?.hash ?? new Uint8Array());
-    // const parentBlockHash = uint8ToString(block?.parentBlockHash?.hash ?? new Uint8Array());
-    // console.log(
-    //   `[data] blockNumber=${block.blockNumber}, Hash: ${blockHash}, Parent Hash: ${parentBlockHash}`
-    // );
   }
 
   handleInvalidate(invalidate: proto.Invalidate__Output) {

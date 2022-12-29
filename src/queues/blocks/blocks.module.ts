@@ -9,6 +9,7 @@ import {
   StreamMessagesStream,
 } from '@apibara/protocol';
 import { AppIndexer } from 'src/indexing/AppIndexer';
+import { EventType } from '@prisma/client';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { AppIndexer } from 'src/indexing/AppIndexer';
   exports: [BlocksService, BullModule],
 })
 export class BlocksModule {
+  constructor(private readonly blocksService: BlocksService) {}
+
   private indexer: AppIndexer;
   private messages: StreamMessagesStream;
   private node: NodeClient;
@@ -51,7 +54,17 @@ export class BlocksModule {
 
     this.messages.on('data', (msg) => {
       if (msg.data) {
-        this.indexer.handleData(msg.data);
+        const indexedData = this.indexer.handleData(msg.data);
+        if (!indexedData) return;
+
+        const { eventType, data } = indexedData;
+        if (eventType === EventType.MINT) {
+          this.blocksService.handleMint(data);
+        } else if (eventType === EventType.TRANSFER) {
+          this.blocksService.handleTransfer(data);
+        } else if (eventType === EventType.CHANGE_ATTRIBUTE) {
+          this.blocksService.handleChangeAttribute(data);
+        }
       } else if (msg.invalidate) {
         this.indexer.handleInvalidate(msg.invalidate);
       }
@@ -59,6 +72,6 @@ export class BlocksModule {
   }
 
   onModuleInit() {
-    this.createStream(500000);
+    this.createStream(563710);
   }
 }
