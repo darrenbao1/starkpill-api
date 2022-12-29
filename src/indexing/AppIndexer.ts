@@ -56,14 +56,14 @@ export class AppIndexer {
 
         const timestamp = block.timestamp;
         const blockNumber = block.blockNumber;
-        const trxnHash = uint8ToString(trxn.transactionHash);
+        const transactionHash = uint8ToString(trxn.transactionHash);
 
         // TODO: Add a new event type of change prescription when the old prescription is null
         const eventType =
           eventKey === PRESCRIPTION_UPDATED_KEY
             ? EventName.Prescription_Updated
             : EventName.Transfer;
-        const commonData = { timestamp, blockNumber, trxnHash };
+        const commonData = { timestamp, blockNumber, transactionHash };
 
         // once an event is found, add it to the array and continue to the next trxn as each trxn only has one indexed event
         // e.g. a mint event also has transfer events, but will be ignored

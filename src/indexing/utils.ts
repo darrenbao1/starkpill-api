@@ -49,7 +49,7 @@ interface TrxnData {
   tokenId: number;
   timestamp: Date;
   blockNumber: number;
-  trxnHash: string;
+  transactionHash: string;
 }
 
 export interface PrescriptionUpdatedData extends TrxnData {

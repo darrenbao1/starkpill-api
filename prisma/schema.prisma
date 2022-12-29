@@ -38,24 +38,23 @@ model Event {
 
 model Mint {
   transactionHash String @id
-  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
-  mintPrice       Int
-  background      String
-  ingredient      String
+  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
+  mintPrice       BigInt
+  background      Int
+  ingredient      Int
 }
 
 model ChangeAttribute {
   transactionHash String @id
-  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
-  oldBackground   String
-  oldIngredient   String
-  newBackground   String
-  newIngredient   String
+  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
+  oldBackground   Int
+  oldIngredient   Int
+  newBackground   Int
+  newIngredient   Int
 }
 
 model Transfer {
   transactionHash String @id
-  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
+  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
   from            String
-  to              String
 }

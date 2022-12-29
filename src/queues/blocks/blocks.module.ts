@@ -11,12 +11,14 @@ import {
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import { EventType } from '@prisma/client';
 import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: BLOCKS_QUEUE,
     }),
+    PrismaModule,
   ],
   providers: [BlocksService, BlocksProcessor],
   exports: [BlocksService, BullModule],
@@ -80,6 +82,6 @@ export class BlocksModule {
   }
 
   onModuleInit() {
-    this.createStream(520700);
+    this.createStream(565020);
   }
 }
