@@ -1,6 +1,4 @@
-// !: Custom checks were manually added to the migration file as the prisma migrate tool does not support custom checks yet
-// !: First check is for the metadata table, which should only have 1 row, 
-// !: Second check is for the event table that the eventType should have the right NULL and NOT NULL values
+// !: A check was manually added to the first migration to ensure that the metadata table has only 1 row
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -9,25 +7,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-model Event {
-  transactionHash String    @id
-  to              String // the address of the user
-  tokenId         Int
-  blockNumber     Int
-  timestamp       DateTime
-  eventType       EventType
-
-  // for minting only
-  mintPrice Int?
-
-  // for minting and changing attribute
-  background String?
-  ingredient String?
-
-  // for transfer only
-  from String?
 }
 
 // Should only have 1 row
@@ -43,4 +22,41 @@ enum EventType {
   MINT
   TRANSFER
   CHANGE_ATTRIBUTE
+}
+
+model Event {
+  transactionHash String    @id
+  to              String // the address of the user, mint to or transfer to address, or the address changing attributes
+  tokenId         Int
+  blockNumber     Int
+  timestamp       DateTime
+  eventType       EventType
+
+  Mint            Mint?
+  ChangeAttribute ChangeAttribute?
+  Transfer        Transfer?
+}
+
+model Mint {
+  transactionHash String @id
+  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
+  mintPrice       Int
+  background      String
+  ingredient      String
+}
+
+model ChangeAttribute {
+  transactionHash String @id
+  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
+  oldBackground   String
+  oldIngredient   String
+  newBackground   String
+  newIngredient   String
+}
+
+model Transfer {
+  transactionHash String @id
+  combinedEvent   Event  @relation(fields: [transactionHash], references: [transactionHash])
+  from            String
+  to              String
 }
