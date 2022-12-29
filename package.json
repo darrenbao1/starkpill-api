@@ -22,6 +22,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@apibara/protocol": "^0.3.0",
+    "@apibara/starknet": "^0.1.1",
     "@bull-board/express": "^4.9.0",
     "@nestjs/apollo": "^10.1.7",
     "@nestjs/bull": "^0.6.2",
@@ -38,7 +40,8 @@
     "ioredis": "^5.2.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "starknet": "^4.17.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
