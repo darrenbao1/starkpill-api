@@ -57,14 +57,7 @@ export class BlocksModule {
         const indexedData = this.indexer.handleData(msg.data);
         if (!indexedData) return;
 
-        const { eventType, data } = indexedData;
-        if (eventType === EventType.MINT) {
-          this.blocksService.handleMint(data);
-        } else if (eventType === EventType.TRANSFER) {
-          this.blocksService.handleTransfer(data);
-        } else if (eventType === EventType.CHANGE_ATTRIBUTE) {
-          this.blocksService.handleChangeAttribute(data);
-        }
+        this.blocksService.indexBlockData(indexedData);
       } else if (msg.invalidate) {
         this.indexer.handleInvalidate(msg.invalidate);
       }

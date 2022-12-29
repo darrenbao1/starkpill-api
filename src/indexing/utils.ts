@@ -31,6 +31,8 @@ export const getEventType = (eventKey: string, eventData: string[]) => {
     const [, , , , , oldIng, , oldBG, , , , , ,] = data;
 
     // if oldIng and oldBG are both 0, then it's a mint
+    // !: This is problematic as the user may not have equipped either of the attributes, so both are '0' even though it's not a mint
+    // TODO: Solution: In the mint handler in service, check if the tokenId alr exists, if so, take it as a change of attributes instead of mint
     if (oldIng === '0' && oldBG === '0') {
       return EventType.MINT;
     }
@@ -73,3 +75,35 @@ export const decodeChangeAttributes = (eventData: string[]) => {
 
   return { owner, tokenId, oldIng, oldBG, newIng, newBG };
 };
+
+interface TrxnData {
+  tokenId: number;
+  timestamp: Date;
+  blockNumber: number;
+  trxnHash: string;
+}
+
+export interface MintData extends TrxnData {
+  owner: string;
+  mintPrice: number;
+  ing: number;
+  bg: number;
+}
+
+export interface ChangeAttributeData extends TrxnData {
+  owner: string;
+  oldIng: number;
+  oldBG: number;
+  newIng: number;
+  newBG: number;
+}
+
+export interface TransferData extends TrxnData {
+  from: string;
+  to: string;
+}
+
+export type IndexBlockData =
+  | { data: ChangeAttributeData; eventType: 'CHANGE_ATTRIBUTE' }
+  | { data: MintData; eventType: 'MINT' }
+  | { data: TransferData; eventType: 'TRANSFER' };

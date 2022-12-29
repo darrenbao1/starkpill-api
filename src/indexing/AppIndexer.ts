@@ -2,6 +2,9 @@ import { proto } from '@apibara/protocol';
 import { Block } from '@apibara/starknet';
 import { EventType } from '@prisma/client';
 import {
+  ChangeAttributeData,
+  MintData,
+  TransferData,
   CONTRACT_ADDRESS,
   decodeChangeAttributes,
   decodeMint,
@@ -11,6 +14,7 @@ import {
   PRESCRIPTION_UPDATED_KEY,
   TRANSFER_KEY,
   uint8ToString,
+  IndexBlockData,
 } from './utils';
 
 /**
@@ -21,7 +25,7 @@ export class AppIndexer {
   // protobuf encodes possibly-large numbers as strings
   private currentSequence?: string;
 
-  handleData(data: proto.Data__Output) {
+  handleData(data: proto.Data__Output): IndexBlockData {
     // track sequence number for reconnecting later
     this.currentSequence = data.sequence;
     if (!data.data?.value) {
@@ -63,17 +67,23 @@ export class AppIndexer {
         if (eventType === EventType.MINT) {
           return {
             eventType,
-            data: { ...decodeMint(eventData), ...commonData },
+            data: { ...decodeMint(eventData), ...commonData } as MintData,
           };
         } else if (eventType === EventType.CHANGE_ATTRIBUTE) {
           return {
             eventType,
-            data: { ...decodeChangeAttributes(eventData), ...commonData },
+            data: {
+              ...decodeChangeAttributes(eventData),
+              ...commonData,
+            } as ChangeAttributeData,
           };
         } else if (eventType === EventType.TRANSFER) {
           return {
             eventType,
-            data: { ...decodeTransfer(eventData), ...commonData },
+            data: {
+              ...decodeTransfer(eventData),
+              ...commonData,
+            } as TransferData,
           };
         }
 
