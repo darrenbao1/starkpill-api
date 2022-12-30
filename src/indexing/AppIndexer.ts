@@ -23,11 +23,16 @@ export class AppIndexer {
   // protobuf encodes possibly-large numbers as strings
   private currentSequence?: string;
 
+  static getBlockNumber(data: proto.Data__Output): number {
+    const block = Block.decode(data.data.value);
+    return block.blockNumber;
+  }
+
   handleData(data: proto.Data__Output): IndexBlockData[] {
     // track sequence number for reconnecting later
     this.currentSequence = data.sequence;
     if (!data.data?.value) {
-      return;
+      return [];
     }
     const block = Block.decode(data.data.value);
     console.log('Block Number: ' + block.blockNumber);

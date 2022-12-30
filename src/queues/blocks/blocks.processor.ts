@@ -2,7 +2,12 @@ import { Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { BlocksService } from './blocks.service';
-import { BLOCKS_QUEUE, INDEX_BLOCK } from '../constants';
+import {
+  BLOCKS_QUEUE,
+  INDEX_BLOCK,
+  INVALIDATE_BLOCKS,
+  MARK_BLOCK_AS_INDEXED,
+} from '../constants';
 import { EventName, IndexBlockData } from 'src/indexing/utils';
 
 @Injectable()
@@ -20,5 +25,15 @@ export class BlocksProcessor {
     } else if (eventType === EventName.Transfer) {
       await this.blocksService.handleTransfer(data);
     }
+  }
+
+  @Process(MARK_BLOCK_AS_INDEXED)
+  async markBlockAsIndexed(job: Job<number>) {
+    await this.blocksService.markBlockAsIndexed(job.data);
+  }
+
+  @Process(INVALIDATE_BLOCKS)
+  async invalidateBlocks(job: Job<number>) {
+    await this.blocksService.invalidateBlocks(job.data);
   }
 }

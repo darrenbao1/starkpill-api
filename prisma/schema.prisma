@@ -11,9 +11,8 @@ datasource db {
 
 // Should only have 1 row
 model metadata {
-  id           Int @id @default(1)
-  lastIndexed  Int // will return a still indexing error if more than 5 blocks behind the currentBlock
-  currentBlock Int // get starting currentBlock from infura, otherwise start from lastIndexed
+  id               Int @id @default(1)
+  lastIndexedBlock Int 
 }
 
 // 3 types of trxn: mint transfer, change attribute

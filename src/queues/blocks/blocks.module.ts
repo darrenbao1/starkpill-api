@@ -9,9 +9,9 @@ import {
   StreamMessagesStream,
 } from '@apibara/protocol';
 import { AppIndexer } from 'src/indexing/AppIndexer';
-import { EventType } from '@prisma/client';
 import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
 
 @Module({
   imports: [
@@ -50,38 +50,48 @@ export class BlocksModule {
       console.log('stopping stream');
     });
 
-    this.messages.on('error', (err: any) => {
+    this.messages.on('error', async (err: any) => {
       // recreate stream
       console.log('error occured in stream');
       console.log(err);
       this.messages.destroy();
-      this.createStream(initialBlock); // change to last indexed block + 1
+      this.createStream((await this.blocksService.getLastIndexedBlock()) + 1); // change to last indexed block + 1
     });
 
-    this.messages.on('data', (msg) => {
+    this.messages.on('data', (msg: StreamMessagesResponse__Output) => {
       if (msg.data) {
         clearTimeout(this.takesTooLongTimeout);
         // ensure that the stream doesn't get stuck
-        this.takesTooLongTimeout = setTimeout(() => {
+        this.takesTooLongTimeout = setTimeout(async () => {
           console.log('restarting because it took too long');
           this.messages.destroy();
           this.messages.cleanupSource();
-          this.createStream(initialBlock); // change to last indexed block + 1
+
+          const blockToRestartFrom =
+            (await this.blocksService.getLastIndexedBlock()) + 1;
+          this.createStream(blockToRestartFrom); // change to last indexed block + 1
         }, RESTART_STREAM_AFTER);
 
         const indexedDataArr = this.indexer.handleData(msg.data);
-        if (!indexedDataArr || indexedDataArr.length === 0) return;
+        const blockNumber = AppIndexer.getBlockNumber(msg.data);
 
-        indexedDataArr.forEach((data) =>
-          this.blocksService.indexBlockData(data),
-        );
+        if (indexedDataArr.length > 0) {
+          indexedDataArr.forEach((data) =>
+            this.blocksService.queueIndexBlockData(data),
+          );
+        }
+
+        this.blocksService.queueMarkBlockAsIndexed(blockNumber);
       } else if (msg.invalidate) {
+        this.blocksService.queueInvalidateBlocks(
+          Number(msg.invalidate.sequence),
+        );
         this.indexer.handleInvalidate(msg.invalidate);
       }
     });
   }
 
-  onModuleInit() {
-    this.createStream(565020);
+  async onModuleInit() {
+    this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
   }
 }
