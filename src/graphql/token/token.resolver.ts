@@ -1,18 +1,21 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { Token } from './model/token.model';
+import { TokenService } from './token.service';
 
 @Resolver()
 export class TokenResolver {
+  constructor(private readonly tokenService: TokenService) {}
+
   @Query(() => Token)
   async token(
-    @Args('address', { type: () => String }) address: string,
+    @Args('tokenId', { type: () => Int }) tokenId: string,
   ): Promise<Token> {
-    return null;
+    return this.tokenService.findTokenById(tokenId);
   }
 
   @Query(() => [Token])
   async tokens(
-    @Args('address', { type: () => String }) address: string,
+    @Args('tokenIds', { type: () => [Int] }) tokenIds: string,
   ): Promise<Token[]> {
     return null;
   }

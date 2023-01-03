@@ -1,4 +1,5 @@
 import { Field, ObjectType, GraphQLTimestamp, Int } from '@nestjs/graphql';
+import { TransactionType } from 'src/graphql/enums';
 import { Token } from 'src/graphql/token/model/token.model';
 import { ChangeAttribute } from './changeAttribute.model';
 import { Mint } from './mint.model';
@@ -17,6 +18,9 @@ export class Transaction {
 
   @Field(() => GraphQLTimestamp)
   timestamp: Date;
+
+  @Field(() => TransactionType)
+  transactionType: TransactionType;
 
   // only 1 of the following 3 will be present
   @Field(() => Mint, { nullable: true })

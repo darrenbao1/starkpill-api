@@ -42,7 +42,9 @@ export class BlocksService {
         where: { transactionHash },
       })
     ) {
-      console.log('this transaction has already been indexed');
+      console.log(
+        'this mint/change attributes transaction has already been indexed',
+      );
       return;
     }
 
@@ -115,7 +117,7 @@ export class BlocksService {
         where: { transactionHash: eventData.transactionHash },
       })
     ) {
-      console.log('this transaction has already been indexed');
+      console.log('this transfer transaction has already been indexed');
       return;
     }
 
