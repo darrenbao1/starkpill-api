@@ -4,8 +4,7 @@ CREATE TYPE "EventType" AS ENUM ('MINT', 'TRANSFER', 'CHANGE_ATTRIBUTE');
 -- CreateTable
 CREATE TABLE "metadata" (
     "id" INTEGER NOT NULL DEFAULT 1,
-    "lastIndexed" INTEGER NOT NULL,
-    "currentBlock" INTEGER NOT NULL,
+    "lastIndexedBlock" INTEGER NOT NULL,
 
     CONSTRAINT "metadata_pkey" PRIMARY KEY ("id"),
     CHECK ("id" = 1)
@@ -26,9 +25,9 @@ CREATE TABLE "Event" (
 -- CreateTable
 CREATE TABLE "Mint" (
     "transactionHash" TEXT NOT NULL,
-    "mintPrice" INTEGER NOT NULL,
-    "background" TEXT NOT NULL,
-    "ingredient" TEXT NOT NULL,
+    "mintPrice" BIGINT NOT NULL,
+    "background" INTEGER NOT NULL,
+    "ingredient" INTEGER NOT NULL,
 
     CONSTRAINT "Mint_pkey" PRIMARY KEY ("transactionHash")
 );
@@ -36,10 +35,10 @@ CREATE TABLE "Mint" (
 -- CreateTable
 CREATE TABLE "ChangeAttribute" (
     "transactionHash" TEXT NOT NULL,
-    "oldBackground" TEXT NOT NULL,
-    "oldIngredient" TEXT NOT NULL,
-    "newBackground" TEXT NOT NULL,
-    "newIngredient" TEXT NOT NULL,
+    "oldBackground" INTEGER NOT NULL,
+    "oldIngredient" INTEGER NOT NULL,
+    "newBackground" INTEGER NOT NULL,
+    "newIngredient" INTEGER NOT NULL,
 
     CONSTRAINT "ChangeAttribute_pkey" PRIMARY KEY ("transactionHash")
 );
@@ -48,7 +47,6 @@ CREATE TABLE "ChangeAttribute" (
 CREATE TABLE "Transfer" (
     "transactionHash" TEXT NOT NULL,
     "from" TEXT NOT NULL,
-    "to" TEXT NOT NULL,
 
     CONSTRAINT "Transfer_pkey" PRIMARY KEY ("transactionHash")
 );

@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Mint" ALTER COLUMN "mintPrice" SET DATA TYPE BIGINT;
