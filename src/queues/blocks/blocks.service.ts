@@ -110,6 +110,15 @@ export class BlocksService {
   }
 
   async handleTransfer({ from, ...eventData }: TransferData) {
+    if (
+      await this.prismaService.event.findFirst({
+        where: { transactionHash: eventData.transactionHash },
+      })
+    ) {
+      console.log('this transaction has already been indexed');
+      return;
+    }
+
     const result = await this.prismaService.event.create({
       data: {
         ...eventData,
@@ -142,7 +151,7 @@ export class BlocksService {
   }
 
   async queueInvalidateBlocks(blockNumber: number) {
-    this.blocksQueue.empty();
+    await this.blocksQueue.empty();
     await this.blocksQueue.add(INVALIDATE_BLOCKS, blockNumber, {
       ...JOB_SETTINGS,
       priority: 1, //  Max priority
@@ -166,7 +175,7 @@ export class BlocksService {
   async getLastIndexedBlock() {
     return (
       (await this.prismaService.metadata.findFirst({ where: { id: 1 } }))
-        ?.lastIndexedBlock ?? 500000
+        ?.lastIndexedBlock ?? 500000 // replace with seeded value
     );
   }
 }
