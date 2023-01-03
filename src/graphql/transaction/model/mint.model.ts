@@ -1,4 +1,5 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { User } from 'src/graphql/user/models/user.model';
 
 @ObjectType()
 export class Mint {
@@ -11,8 +12,8 @@ export class Mint {
   @Field(() => Int)
   ingredient: number;
 
-  @Field(() => String)
-  mintAddress: string;
+  @Field(() => User)
+  minter: User;
 
   @Field(() => String)
   mintingAddress: string;

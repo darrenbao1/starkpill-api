@@ -3,6 +3,9 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { RootModule } from './root/root.module';
+import { TokenModule } from './token/token.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { RootModule } from './root/root.module';
       playground: false,
     }),
     RootModule,
+    TokenModule,
+    TransactionModule,
+    UserModule,
   ],
   providers: [],
 })

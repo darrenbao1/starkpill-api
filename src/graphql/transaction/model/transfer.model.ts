@@ -1,4 +1,5 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { User } from 'src/graphql/user/models/user.model';
 
 @ObjectType()
 export class Transfer {
@@ -11,9 +12,9 @@ export class Transfer {
   @Field(() => Int)
   ingredient: number;
 
-  @Field(() => String)
-  from: string;
+  @Field(() => User)
+  from: User;
 
-  @Field(() => String)
-  to: string;
+  @Field(() => User)
+  to: User;
 }

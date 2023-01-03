@@ -1,4 +1,5 @@
 import { Field, ObjectType, GraphQLTimestamp, Int } from '@nestjs/graphql';
+import { Token } from 'src/graphql/token/model/token.model';
 import { ChangeAttribute } from './changeAttribute.model';
 import { Mint } from './mint.model';
 import { Transfer } from './transfer.model';
@@ -8,8 +9,8 @@ export class Transaction {
   @Field(() => String)
   hash: string;
 
-  @Field(() => Int)
-  tokenId: number;
+  @Field(() => Token)
+  token: Token;
 
   @Field(() => Int)
   blockNumber: number;

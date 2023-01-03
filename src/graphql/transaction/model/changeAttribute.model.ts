@@ -1,4 +1,5 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { User } from 'src/graphql/user/models/user.model';
 
 @ObjectType()
 export class ChangeAttribute {
@@ -14,6 +15,6 @@ export class ChangeAttribute {
   @Field(() => Int)
   newIngredient: number;
 
-  @Field(() => String)
-  calleeAddress: string;
+  @Field(() => User)
+  callee: User;
 }

@@ -2,8 +2,65 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type User {
+  address: String!
+  tokens: [Token!]!
+  transactions: [Transaction!]!
+}
+
+type ChangeAttribute {
+  oldBackground: Int!
+  oldIngredient: Int!
+  newBackground: Int!
+  newIngredient: Int!
+  callee: User!
+}
+
+type Mint {
+  mintPrice: String!
+  background: Int!
+  ingredient: Int!
+  minter: User!
+  mintingAddress: String!
+}
+
+type Transfer {
+  mintPrice: String!
+  background: Int!
+  ingredient: Int!
+  from: User!
+  to: User!
+}
+
+type Transaction {
+  hash: String!
+  token: Token!
+  blockNumber: Int!
+  timestamp: Timestamp!
+  mint: Mint
+  transfer: Transfer
+  changeAttribute: ChangeAttribute
+}
+
+"""
+`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
+
+type Token {
+  id: Int!
+  transactions: [Transaction!]!
+  owner: String!
+  mintPrice: String!
+}
+
 type Query {
   query: String!
+  token(address: String!): Token!
+  tokens(address: String!): [Token!]!
+  transaction(address: String!): Transaction!
+  transactions(address: String!): [Transaction!]!
+  user(address: String!): User!
 }
 
 type Mutation {
