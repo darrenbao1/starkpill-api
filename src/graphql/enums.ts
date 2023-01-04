@@ -1,9 +1,8 @@
 import { registerEnumType } from '@nestjs/graphql';
+import { EventType } from '@prisma/client';
 
-export enum TransactionType {
-  TRANSFER = 'TRANSFER',
-  MINT = 'MINT',
-  CHANGE_ATTRIBUTE = 'CHANGE_ATTRIBUTE',
-}
-
-registerEnumType(TransactionType, { name: 'TransactionType' });
+export { EventType as TransactionType };
+registerEnumType(EventType, {
+  name: 'TransactionType',
+  description: 'Types of indexed transactions',
+});

@@ -14,7 +14,4 @@ export class Mint {
 
   @Field(() => User)
   minter: User;
-
-  @Field(() => String)
-  mintingAddress: string;
 }

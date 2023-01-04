@@ -6,7 +6,7 @@ export class GraphqlResolver {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Query(() => Int)
-  transaction() {
+  lastIndexedBlock() {
     return this.prismaService.metadata
       .findUnique({ where: { id: 1 } })
       .then((block) => block.lastIndexedBlock);

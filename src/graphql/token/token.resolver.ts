@@ -7,15 +7,13 @@ export class TokenResolver {
   constructor(private readonly tokenService: TokenService) {}
 
   @Query(() => Token)
-  async token(
-    @Args('tokenId', { type: () => Int }) tokenId: string,
-  ): Promise<Token> {
+  async token(@Args('tokenId', { type: () => Int }) tokenId: number) {
     return this.tokenService.findTokenById(tokenId);
   }
 
   @Query(() => [Token])
   async tokens(
-    @Args('tokenIds', { type: () => [Int] }) tokenIds: string,
+    @Args('tokenIds', { type: () => [Int] }) tokenIds: number[],
   ): Promise<Token[]> {
     return null;
   }

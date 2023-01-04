@@ -2,12 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
-  address: String!
-  tokens: [Token!]!
-  transactions: [Transaction!]!
-}
-
 type ChangeAttribute {
   oldBackground: Int!
   oldIngredient: Int!
@@ -21,13 +15,9 @@ type Mint {
   background: Int!
   ingredient: Int!
   minter: User!
-  mintingAddress: String!
 }
 
 type Transfer {
-  mintPrice: String!
-  background: Int!
-  ingredient: Int!
   from: User!
   to: User!
 }
@@ -37,6 +27,7 @@ type Transaction {
   token: Token!
   blockNumber: Int!
   timestamp: Timestamp!
+  transactionType: TransactionType!
   mint: Mint
   transfer: Transfer
   changeAttribute: ChangeAttribute
@@ -47,6 +38,19 @@ type Transaction {
 """
 scalar Timestamp
 
+"""Types of indexed transactions"""
+enum TransactionType {
+  MINT
+  TRANSFER
+  CHANGE_ATTRIBUTE
+}
+
+type User {
+  address: String!
+  tokens: [Token!]!
+  transactions: [Transaction!]!
+}
+
 type Token {
   id: Int!
   transactions: [Transaction!]!
@@ -56,11 +60,12 @@ type Token {
 
 type Query {
   query: String!
-  token(address: String!): Token!
-  tokens(address: String!): [Token!]!
-  transaction(address: String!): Transaction!
-  transactions(address: String!): [Transaction!]!
+  token(tokenId: Int!): Token!
+  tokens(tokenIds: [Int!]!): [Token!]!
+  transaction(transactionHash: String!): Transaction!
+  transactions(transactionHashes: [String!]!): [Transaction!]!
   user(address: String!): User!
+  lastIndexedBlock: Int!
 }
 
 type Mutation {
