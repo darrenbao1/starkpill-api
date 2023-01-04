@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Token } from '../../token/model/token.model';
 import { Transaction } from '../../transaction/model/transaction.model';
 
@@ -9,6 +9,9 @@ export class User {
 
   @Field(() => [Token])
   tokens: Token[];
+
+  @Field(() => Int)
+  numberOfTokensOwned: number;
 
   @Field(() => [Transaction])
   transactions: Transaction[];

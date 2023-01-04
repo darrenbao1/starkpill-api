@@ -18,6 +18,7 @@ export class TransactionResolver {
   async transaction(
     @Args('transactionHash', { type: () => String }) transactionHash: string,
   ) {
+    console.log('hi');
     return this.transactionService.findTransactionByHash(transactionHash);
   }
 
@@ -32,7 +33,10 @@ export class TransactionResolver {
   @ResolveField(() => Mint)
   async mint(@Parent() transaction: Transaction) {
     const mintTrxn = await this.prismaService.event.findFirst({
-      where: { transactionHash: transaction.hash, eventType: EventType.MINT },
+      where: {
+        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
+        eventType: EventType.MINT,
+      },
       include: { Mint: true },
     });
 
@@ -44,7 +48,7 @@ export class TransactionResolver {
       mintPrice: mintTrxn.Mint.mintPrice.toString(),
       background: mintTrxn.Mint.background,
       ingredient: mintTrxn.Mint.ingredient,
-      minter: mintTrxn.to,
+      minter: { address: mintTrxn.to },
     };
   }
 
@@ -52,7 +56,7 @@ export class TransactionResolver {
   async transfer(@Parent() transaction: Transaction) {
     const transferTrxn = await this.prismaService.event.findFirst({
       where: {
-        transactionHash: transaction.hash,
+        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
         eventType: EventType.TRANSFER,
       },
       include: { Transfer: true },
@@ -63,8 +67,8 @@ export class TransactionResolver {
     }
 
     return {
-      from: transferTrxn.Transfer.from,
-      to: transferTrxn.to,
+      from: { address: transferTrxn.Transfer.from },
+      to: { address: transferTrxn.to },
     };
   }
 
@@ -72,7 +76,7 @@ export class TransactionResolver {
   async changeAttribute(@Parent() transaction: Transaction) {
     const changeAttributeTrxn = await this.prismaService.event.findFirst({
       where: {
-        transactionHash: transaction.hash,
+        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
         eventType: EventType.CHANGE_ATTRIBUTE,
       },
       include: { ChangeAttribute: true },
@@ -86,7 +90,7 @@ export class TransactionResolver {
       changeAttributeTrxn.ChangeAttribute;
 
     return {
-      callee: changeAttributeTrxn.to,
+      callee: { address: changeAttributeTrxn.to },
       oldBackground,
       newBackground,
       oldIngredient,

@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Token } from '../token/model/token.model';
-import { Transaction } from '../transaction/model/transaction.model';
-import { User } from './models/user.model';
 
 @Injectable()
 export class UserService {
@@ -11,26 +8,26 @@ export class UserService {
   async findUserByAddress(address: string) {
     const transactions = await this.prismaService.event.findMany({
       where: {
-        OR: [
-          {
-            to: address,
-            Transfer: {
-              from: address,
-            },
-          },
-        ],
+        to: {
+          equals: address,
+          mode: 'insensitive',
+        },
       },
       include: {
         Transfer: true,
       },
     });
 
-    const tokenIds: number[] = await this.findTokenIdsOwnedByUser(address);
+    const trxnHashes = transactions.map((trxn) => ({
+      hash: trxn.transactionHash,
+    }));
+
+    const tokenIds = await this.findTokenIdsOwnedByUser(address);
 
     return {
       address,
-      tokenIds,
-      transactions,
+      tokens: tokenIds,
+      transactions: trxnHashes,
     };
   }
 
@@ -42,11 +39,17 @@ export class UserService {
       where: {
         OR: [
           {
-            to: address,
+            to: {
+              equals: address,
+              mode: 'insensitive',
+            },
           },
           {
             Transfer: {
-              from: address,
+              from: {
+                equals: address,
+                mode: 'insensitive',
+              },
             },
           },
         ],
@@ -59,28 +62,62 @@ export class UserService {
       },
     });
 
-    const tokensInteractedWith: Set<number> = new Set<number>();
+    const tokensInteractedWithSet: Set<number> = new Set<number>();
 
     transactions.forEach((transaction) => {
-      tokensInteractedWith.add(transaction.tokenId);
+      tokensInteractedWithSet.add(transaction.tokenId);
     });
 
     const tokenIdsOwned: number[] = [];
+    const tokensInteractedWithArr = new Array(...tokensInteractedWithSet);
 
-    for (const tokenId of tokensInteractedWith) {
+    const lowercaseAddress = address.toLowerCase();
+
+    for (const tokenId of tokensInteractedWithArr) {
       // find gets the first trxn in the array, so it's the most recent one
       const transaction = transactions.find((trxn) => trxn.tokenId === tokenId);
 
-      if (transaction.eventType === 'MINT' && transaction.to === address) {
+      if (
+        transaction.eventType === 'MINT' &&
+        transaction.to === lowercaseAddress
+      ) {
         tokenIdsOwned.push(tokenId);
       } else if (
         transaction.eventType === 'TRANSFER' &&
-        transaction.to === address
+        transaction.to === lowercaseAddress
       ) {
         tokenIdsOwned.push(tokenId);
       }
     }
 
     return tokenIdsOwned;
+  }
+
+  async findTransactionsByUser(address: string) {
+    const transactions = await this.prismaService.event.findMany({
+      where: {
+        OR: [
+          {
+            to: {
+              equals: address,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Transfer: {
+              from: {
+                equals: address,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        Transfer: true,
+      },
+    });
+
+    return transactions.map((trxn) => trxn.transactionHash);
   }
 }

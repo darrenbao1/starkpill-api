@@ -10,9 +10,15 @@ export class Token {
   @Field(() => [Transaction])
   transactions: Transaction[];
 
-  @Field(() => String)
+  @Field(() => User)
   owner: User;
 
   @Field(() => String)
   mintPrice: string;
+
+  @Field(() => Int)
+  background: number;
+
+  @Field(() => Int)
+  ingredient: number;
 }

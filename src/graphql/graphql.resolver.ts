@@ -7,8 +7,9 @@ export class GraphqlResolver {
 
   @Query(() => Int)
   lastIndexedBlock() {
-    return this.prismaService.metadata
-      .findUnique({ where: { id: 1 } })
-      .then((block) => block.lastIndexedBlock);
+    return this.prismaService.metadata.findUnique({
+      where: { id: 1 },
+      select: { lastIndexedBlock: true },
+    });
   }
 }
