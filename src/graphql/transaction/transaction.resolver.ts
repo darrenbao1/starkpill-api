@@ -1,6 +1,8 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Token } from '../token/model/token.model';
+import { TokenService } from '../token/token.service';
 import { ChangeAttribute } from './model/changeAttribute.model';
 import { Mint } from './model/mint.model';
 import { Transaction } from './model/transaction.model';
@@ -12,13 +14,13 @@ export class TransactionResolver {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly transactionService: TransactionService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @Query(() => Transaction)
   async transaction(
     @Args('transactionHash', { type: () => String }) transactionHash: string,
   ) {
-    console.log('hi');
     return this.transactionService.findTransactionByHash(transactionHash);
   }
 
@@ -90,11 +92,20 @@ export class TransactionResolver {
       changeAttributeTrxn.ChangeAttribute;
 
     return {
-      callee: { address: changeAttributeTrxn.to },
       oldBackground,
       newBackground,
       oldIngredient,
       newIngredient,
+      callee: { address: changeAttributeTrxn.to },
     };
+  }
+
+  @ResolveField(() => Token)
+  async token(@Parent() transaction: Transaction) {
+    const tokenId = await this.transactionService.getTokenForTransaction(
+      transaction.hash,
+    );
+
+    return this.tokenService.findTokenById(tokenId);
   }
 }

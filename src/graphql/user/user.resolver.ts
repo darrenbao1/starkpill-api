@@ -43,7 +43,7 @@ export class UserResolver {
     return tokens.map((token) => ({
       id: token.id,
       transactions: token.transactions,
-      owner: { address: token.owner },
+      owner: token.owner,
       mintPrice: token.mintPrice,
       background: token.background,
       ingredient: token.ingredient,

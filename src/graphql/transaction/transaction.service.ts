@@ -35,4 +35,17 @@ export class TransactionService {
 
     return trxnDetails;
   }
+
+  async getTokenForTransaction(hash: string) {
+    const trxn = await this.prismaService.event.findUnique({
+      where: {
+        transactionHash: hash,
+      },
+      select: {
+        tokenId: true,
+      },
+    });
+
+    return trxn.tokenId;
+  }
 }

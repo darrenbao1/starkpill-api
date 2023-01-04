@@ -6,10 +6,12 @@ export class GraphqlResolver {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Query(() => Int)
-  lastIndexedBlock() {
-    return this.prismaService.metadata.findUnique({
+  async lastIndexedBlock() {
+    const { lastIndexedBlock } = await this.prismaService.metadata.findUnique({
       where: { id: 1 },
       select: { lastIndexedBlock: true },
     });
+
+    return lastIndexedBlock;
   }
 }
