@@ -69,7 +69,7 @@ export class UserService {
     });
 
     const tokenIdsOwned: number[] = [];
-    const tokensInteractedWithArr = new Array(...tokensInteractedWithSet);
+    const tokensInteractedWithArr = Array.from(tokensInteractedWithSet);
 
     const lowercaseAddress = address.toLowerCase();
 
