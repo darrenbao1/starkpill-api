@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PaginationArgs } from '../shared/pagination.args';
 
 @Injectable()
 export class TransactionService {
@@ -21,7 +22,6 @@ export class TransactionService {
 
     return {
       hash: trxn.transactionHash,
-      token: trxn.tokenId,
       blockNumber: trxn.blockNumber,
       timestamp: trxn.timestamp,
       transactionType: trxn.eventType,
@@ -47,5 +47,26 @@ export class TransactionService {
     });
 
     return trxn.tokenId;
+  }
+
+  async findAllTransactions(paginationArgs: PaginationArgs) {
+    const trxn = await this.prismaService.event.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      orderBy: {
+        timestamp: paginationArgs.orderBy,
+      },
+    });
+
+    if (!trxn) {
+      return null;
+    }
+
+    return trxn.map((trxn) => ({
+      hash: trxn.transactionHash,
+      blockNumber: trxn.blockNumber,
+      timestamp: trxn.timestamp,
+      transactionType: trxn.eventType,
+    }));
   }
 }

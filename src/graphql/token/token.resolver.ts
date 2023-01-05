@@ -6,6 +6,7 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
+import { PaginationArgs } from '../shared/pagination.args';
 import { Transaction } from '../transaction/model/transaction.model';
 import { User } from '../user/models/user.model';
 import { Token } from './model/token.model';
@@ -23,6 +24,12 @@ export class TokenResolver {
   @Query(() => [Token])
   async tokens(@Args('tokenIds', { type: () => [Int] }) tokenIds: number[]) {
     return this.tokenService.findTokensById(tokenIds);
+  }
+
+  // Order by sorts by mint price
+  @Query(() => [Token])
+  async allTokens(@Args() paginationArgs: PaginationArgs) {
+    return this.tokenService.findAllTokens(paginationArgs);
   }
 
   @ResolveField(() => [Transaction])

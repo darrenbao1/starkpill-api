@@ -1,5 +1,5 @@
 import { Field, ObjectType, GraphQLTimestamp, Int } from '@nestjs/graphql';
-import { TransactionType } from 'src/graphql/enums';
+import { TransactionType } from 'src/graphql/shared/enums';
 import { Token } from 'src/graphql/token/model/token.model';
 import { ChangeAttribute } from './changeAttribute.model';
 import { Mint } from './mint.model';

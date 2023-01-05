@@ -1,6 +1,7 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationArgs } from '../shared/pagination.args';
 import { Token } from '../token/model/token.model';
 import { TokenService } from '../token/token.service';
 import { ChangeAttribute } from './model/changeAttribute.model';
@@ -30,6 +31,12 @@ export class TransactionResolver {
     transactionHashes: string[],
   ) {
     return this.transactionService.findTransactionsByHash(transactionHashes);
+  }
+
+  // Order by sorts by date
+  @Query(() => [Transaction])
+  async allTransactions(@Args() paginationArgs: PaginationArgs) {
+    return this.transactionService.findAllTransactions(paginationArgs);
   }
 
   @ResolveField(() => Mint)

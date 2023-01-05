@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PaginationArgs } from '../shared/pagination.args';
 
 @Injectable()
 export class TokenService {
@@ -44,7 +45,7 @@ export class TokenService {
 
     return {
       id: tokenId,
-      owner: { address: owner },
+      owner,
       mintPrice,
       transactions,
       background,
@@ -110,5 +111,23 @@ export class TokenService {
       timestamp: trxn.timestamp,
       transactionType: trxn.eventType,
     }));
+  }
+
+  // Find all tokens that have been minted
+  async findAllTokens(paginationArgs: PaginationArgs) {
+    const tokenIds = await this.prismaService.event.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      orderBy: {
+        timestamp: paginationArgs.orderBy,
+      },
+      select: {
+        tokenId: true,
+      },
+    });
+
+    const tokenIdsSet = new Set(tokenIds.map((token) => token.tokenId));
+
+    return this.findTokensById(Array.from(tokenIdsSet));
   }
 }
