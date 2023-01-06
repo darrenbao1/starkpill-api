@@ -51,9 +51,7 @@ export class TransactionResolver {
     });
 
     if (!mintTrxn) {
-      throw new BadRequestException({
-        error: 'Invalid transaction hash',
-      });
+      return null;
     }
 
     return {
@@ -75,9 +73,7 @@ export class TransactionResolver {
     });
 
     if (!transferTrxn) {
-      throw new BadRequestException({
-        error: 'Invalid transaction hash',
-      });
+      return null;
     }
 
     return {
@@ -97,9 +93,7 @@ export class TransactionResolver {
     });
 
     if (!changeAttributeTrxn) {
-      throw new BadRequestException({
-        error: 'Invalid transaction hash',
-      });
+      return null;
     }
 
     const { oldBackground, newBackground, oldIngredient, newIngredient } =
