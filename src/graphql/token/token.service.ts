@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
 
@@ -59,23 +59,28 @@ export class TokenService {
 
   async getOwner(tokenId: number) {
     // mint or transfer transactions
-    const latestMintOrTransferPromise =
-      await this.prismaService.event.findFirst({
-        include: {
-          Transfer: true,
+    const latestMintOrTransfer = await this.prismaService.event.findFirst({
+      include: {
+        Transfer: true,
+      },
+      where: {
+        tokenId,
+        NOT: {
+          eventType: 'CHANGE_ATTRIBUTE',
         },
-        where: {
-          tokenId,
-          NOT: {
-            eventType: 'CHANGE_ATTRIBUTE',
-          },
-        },
-        orderBy: {
-          blockNumber: 'desc',
-        },
-      });
+      },
+      orderBy: {
+        blockNumber: 'desc',
+      },
+    });
 
-    return { address: latestMintOrTransferPromise.to };
+    if (!latestMintOrTransfer) {
+      throw new BadRequestException({
+        error: 'Invalid tokenId',
+      });
+    }
+
+    return { address: latestMintOrTransfer?.to };
   }
 
   private async getMintingPrice(tokenId: number) {
@@ -87,6 +92,12 @@ export class TokenService {
         tokenId,
       },
     });
+
+    if (!mintTrxn) {
+      throw new BadRequestException({
+        error: 'Invalid tokenId',
+      });
+    }
 
     return mintTrxn?.Mint?.mintPrice.toString();
   }
@@ -115,19 +126,17 @@ export class TokenService {
 
   // Find all tokens that have been minted
   async findAllTokens(paginationArgs: PaginationArgs) {
-    const tokenIds = await this.prismaService.event.findMany({
+    const tokenIds = await this.prismaService.mint.findMany({
       take: paginationArgs.first,
       skip: paginationArgs.skip,
       orderBy: {
-        timestamp: paginationArgs.orderBy,
+        mintPrice: paginationArgs.orderBy,
       },
-      select: {
-        tokenId: true,
+      include: {
+        event: true,
       },
     });
 
-    const tokenIdsSet = new Set(tokenIds.map((token) => token.tokenId));
-
-    return this.findTokensById(Array.from(tokenIdsSet));
+    return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
   }
 }

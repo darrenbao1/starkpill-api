@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
 
@@ -17,7 +17,9 @@ export class TransactionService {
     });
 
     if (!trxn) {
-      return null;
+      throw new BadRequestException({
+        error: 'Invalid transaction hash',
+      });
     }
 
     return {
@@ -46,6 +48,12 @@ export class TransactionService {
       },
     });
 
+    if (!trxn) {
+      throw new BadRequestException({
+        error: 'Invalid transaction hash',
+      });
+    }
+
     return trxn.tokenId;
   }
 
@@ -57,10 +65,6 @@ export class TransactionService {
         timestamp: paginationArgs.orderBy,
       },
     });
-
-    if (!trxn) {
-      return null;
-    }
 
     return trxn.map((trxn) => ({
       hash: trxn.transactionHash,

@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -50,7 +51,9 @@ export class TransactionResolver {
     });
 
     if (!mintTrxn) {
-      return null;
+      throw new BadRequestException({
+        error: 'Invalid transaction hash',
+      });
     }
 
     return {
@@ -72,7 +75,9 @@ export class TransactionResolver {
     });
 
     if (!transferTrxn) {
-      return null;
+      throw new BadRequestException({
+        error: 'Invalid transaction hash',
+      });
     }
 
     return {
@@ -92,7 +97,9 @@ export class TransactionResolver {
     });
 
     if (!changeAttributeTrxn) {
-      return null;
+      throw new BadRequestException({
+        error: 'Invalid transaction hash',
+      });
     }
 
     const { oldBackground, newBackground, oldIngredient, newIngredient } =
