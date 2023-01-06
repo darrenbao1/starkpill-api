@@ -14,7 +14,7 @@ import { GraphqlResolver } from './graphql.resolver';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
-      debug: true,
+      debug: false,
       playground: false,
     }),
     RootModule,
