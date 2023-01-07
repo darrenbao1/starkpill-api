@@ -27,6 +27,7 @@ export class TransactionService {
       blockNumber: trxn.blockNumber,
       timestamp: trxn.timestamp,
       transactionType: trxn.eventType,
+      token: { id: trxn.tokenId },
     };
   }
 
@@ -53,6 +54,7 @@ export class TransactionService {
         blockNumber: trxnDetail.blockNumber,
         timestamp: trxnDetail.timestamp,
         transactionType: trxnDetail.eventType,
+        token: { id: trxnDetail.tokenId },
       }));
   }
 
@@ -89,6 +91,7 @@ export class TransactionService {
       blockNumber: trxn.blockNumber,
       timestamp: trxn.timestamp,
       transactionType: trxn.eventType,
+      token: { id: trxn.tokenId },
     }));
   }
 }
