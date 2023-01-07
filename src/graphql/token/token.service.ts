@@ -2,6 +2,7 @@ import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
+import { formatTransaction } from '../shared/utils';
 
 @Injectable()
 export class TokenService {
@@ -34,13 +35,7 @@ export class TokenService {
         ? latestChangeAttributeOrMint.Mint.ingredient
         : latestChangeAttributeOrMint.ChangeAttribute.newIngredient;
 
-    const transactions = rawTrxns.map((trxn) => ({
-      hash: trxn.transactionHash,
-      token: { id: trxn.tokenId },
-      blockNumber: trxn.blockNumber,
-      timestamp: trxn.timestamp,
-      transactionType: trxn.eventType,
-    }));
+    const transactions = rawTrxns.map(formatTransaction);
 
     return {
       id,

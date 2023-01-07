@@ -1,29 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ChangeAttribute, Mint, Transfer, Event } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TransactionType } from '../shared/enums';
 import { PaginationArgs } from '../shared/pagination.args';
+import { formatTransaction } from '../shared/utils';
 import { Transaction } from './model/transaction.model';
 
 @Injectable()
 export class TransactionService {
   constructor(private readonly prismaService: PrismaService) {}
-
-  private formatTransaction(
-    trxn: Event & {
-      ChangeAttribute: ChangeAttribute;
-      Mint: Mint;
-      Transfer: Transfer;
-    },
-  ) {
-    return {
-      hash: trxn.transactionHash,
-      blockNumber: trxn.blockNumber,
-      timestamp: trxn.timestamp,
-      transactionType: trxn.eventType,
-      token: { id: trxn.tokenId },
-    };
-  }
 
   async findTransactionByHash(transactionHash: string) {
     const trxn = await this.prismaService.event.findUnique({
@@ -41,7 +25,7 @@ export class TransactionService {
       });
     }
 
-    return this.formatTransaction(trxn);
+    return formatTransaction(trxn);
   }
 
   async findTransactionsByHash(transactionHashes: string[]) {
@@ -62,7 +46,7 @@ export class TransactionService {
       .map((trxnHash) =>
         trxns.find((trxn) => trxn.transactionHash === trxnHash),
       )
-      .map(this.formatTransaction);
+      .map(formatTransaction);
   }
 
   async findAllTransactions(paginationArgs: PaginationArgs) {
@@ -74,7 +58,7 @@ export class TransactionService {
       },
     });
 
-    return trxn.map(this.formatTransaction);
+    return trxn.map(formatTransaction);
   }
 
   async findSpecificTransactions(

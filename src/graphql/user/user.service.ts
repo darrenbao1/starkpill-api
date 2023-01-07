@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { formatTransaction } from '../shared/utils';
 
 @Injectable()
 export class UserService {
@@ -92,11 +93,6 @@ export class UserService {
       },
     });
 
-    return transactions.map((trxn) => ({
-      ...trxn,
-      hash: trxn.transactionHash,
-      transactionType: trxn.eventType,
-      token: { id: trxn.tokenId },
-    }));
+    return transactions.map(formatTransaction);
   }
 }
