@@ -8,7 +8,6 @@ import {
 } from '@nestjs/graphql';
 import { PaginationArgs } from '../shared/pagination.args';
 import { Transaction } from '../transaction/model/transaction.model';
-import { User } from '../user/models/user.model';
 import { Token } from './model/token.model';
 import { TokenService } from './token.service';
 
@@ -35,10 +34,5 @@ export class TokenResolver {
   @ResolveField(() => [Transaction])
   async transactions(@Parent() token: Token) {
     return this.tokenService.getTransactions(token.id);
-  }
-
-  @ResolveField(() => User)
-  async owner(@Parent() token: Token) {
-    return this.tokenService.getOwner(token.id);
   }
 }

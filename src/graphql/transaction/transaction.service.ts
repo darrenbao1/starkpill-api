@@ -31,11 +31,29 @@ export class TransactionService {
   }
 
   async findTransactionsByHash(transactionHashes: string[]) {
-    const trxnDetails = Promise.all(
-      transactionHashes.map((hash) => this.findTransactionByHash(hash)),
-    );
+    const trxns = await this.prismaService.event.findMany({
+      where: {
+        transactionHash: {
+          in: transactionHashes,
+        },
+      },
+      include: {
+        ChangeAttribute: true,
+        Mint: true,
+        Transfer: true,
+      },
+    });
 
-    return trxnDetails;
+    return transactionHashes
+      .map((trxnHash) =>
+        trxns.find((trxn) => trxn.transactionHash === trxnHash),
+      )
+      .map((trxnDetail) => ({
+        hash: trxnDetail.transactionHash,
+        blockNumber: trxnDetail.blockNumber,
+        timestamp: trxnDetail.timestamp,
+        transactionType: trxnDetail.eventType,
+      }));
   }
 
   async getTokenForTransaction(hash: string) {

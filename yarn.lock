@@ -3440,6 +3440,11 @@ grapheme-splitter@^1.0.4:
   resolved "https://registry.npmjs.org/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
+graphql-fields-list@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/graphql-fields-list/-/graphql-fields-list-2.2.4.tgz#87a0b24345476400cc027c351550e769b4bf5699"
+  integrity sha512-dhsMajI/7FMeZ8UWJDiw7iZlwacW5eBM02IVJ6IldFNgmVSDeuS+0+wF3ZOB0zcpYl3Q1spuegPLAFKcriPOCw==
+
 graphql-tag@2.12.6, graphql-tag@^2.11.0:
   version "2.12.6"
   resolved "https://registry.npmjs.org/graphql-tag/-/graphql-tag-2.12.6.tgz"

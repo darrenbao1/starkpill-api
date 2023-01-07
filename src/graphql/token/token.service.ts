@@ -2,6 +2,7 @@ import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
+
 @Injectable()
 export class TokenService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -33,7 +34,7 @@ export class TokenService {
 
     return {
       id,
-      owner,
+      owner: { address: owner }, // Technically doesn't need to be added here as it's in a ResolveField, but it helps optimising the query when only the address is needed
       mintPrice,
       transactions,
       background,
@@ -70,32 +71,6 @@ export class TokenService {
     return tokenTransactions.map((trxns) =>
       this.getTokenDetails(trxns, trxns[0].tokenId),
     );
-  }
-
-  async getOwner(tokenId: number) {
-    // mint or transfer transactions
-    const latestMintOrTransfer = await this.prismaService.event.findFirst({
-      include: {
-        Transfer: true,
-      },
-      where: {
-        tokenId,
-        NOT: {
-          eventType: 'CHANGE_ATTRIBUTE',
-        },
-      },
-      orderBy: {
-        blockNumber: 'desc',
-      },
-    });
-
-    if (!latestMintOrTransfer) {
-      throw new BadRequestException({
-        error: 'Invalid tokenId',
-      });
-    }
-
-    return { address: latestMintOrTransfer?.to };
   }
 
   async getTransactions(tokenId: number) {

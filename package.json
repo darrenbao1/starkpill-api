@@ -38,6 +38,7 @@
     "class-validator": "^0.14.0",
     "express-basic-auth": "^1.2.1",
     "graphql": "^16.6.0",
+    "graphql-fields-list": "^2.2.4",
     "ioredis": "^5.2.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
