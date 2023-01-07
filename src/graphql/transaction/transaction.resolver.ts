@@ -1,5 +1,4 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TransactionType } from '../shared/enums';
 import { GraphqlFields } from '../shared/graphql-fields.decorator';
@@ -43,76 +42,26 @@ export class TransactionResolver {
 
   @ResolveField(() => Mint)
   async mint(@Parent() transaction: Transaction) {
-    if (transaction.transactionType !== TransactionType.MINT) {
-      return null;
-    }
-
-    const mintTrxn = await this.prismaService.event.findFirst({
-      where: {
-        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
-        eventType: EventType.MINT,
-      },
-      include: { Mint: true },
-    });
-
-    if (!mintTrxn) {
-      return null;
-    }
-
-    return {
-      mintPrice: mintTrxn.Mint.mintPrice.toString(),
-      background: mintTrxn.Mint.background,
-      ingredient: mintTrxn.Mint.ingredient,
-      minter: { address: mintTrxn.to },
-    };
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.MINT,
+    );
   }
 
   @ResolveField(() => Transfer)
   async transfer(@Parent() transaction: Transaction) {
-    if (transaction.transactionType !== TransactionType.TRANSFER) {
-      return null;
-    }
-
-    const transferTrxn = await this.prismaService.event.findFirst({
-      where: {
-        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
-        eventType: EventType.TRANSFER,
-      },
-      include: { Transfer: true },
-    });
-
-    if (!transferTrxn) {
-      return null;
-    }
-
-    return {
-      from: { address: transferTrxn.Transfer.from },
-      to: { address: transferTrxn.to },
-    };
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.TRANSFER,
+    );
   }
 
   @ResolveField(() => ChangeAttribute)
   async changeAttribute(@Parent() transaction: Transaction) {
-    if (transaction.transactionType !== TransactionType.CHANGE_ATTRIBUTE) {
-      return null;
-    }
-
-    const changeAttributeTrxn = await this.prismaService.event.findFirst({
-      where: {
-        transactionHash: { equals: transaction.hash, mode: 'insensitive' },
-        eventType: EventType.CHANGE_ATTRIBUTE,
-      },
-      include: { ChangeAttribute: true },
-    });
-
-    if (!changeAttributeTrxn) {
-      return null;
-    }
-
-    return {
-      ...changeAttributeTrxn.ChangeAttribute,
-      callee: { address: changeAttributeTrxn.to },
-    };
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.CHANGE_ATTRIBUTE,
+    );
   }
 
   @ResolveField(() => Token)
