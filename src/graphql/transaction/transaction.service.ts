@@ -1,10 +1,27 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ChangeAttribute, Mint, Transfer, Event } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
 
 @Injectable()
 export class TransactionService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private formatTransaction(
+    trxn: Event & {
+      ChangeAttribute: ChangeAttribute;
+      Mint: Mint;
+      Transfer: Transfer;
+    },
+  ) {
+    return {
+      hash: trxn.transactionHash,
+      blockNumber: trxn.blockNumber,
+      timestamp: trxn.timestamp,
+      transactionType: trxn.eventType,
+      token: { id: trxn.tokenId },
+    };
+  }
 
   async findTransactionByHash(transactionHash: string) {
     const trxn = await this.prismaService.event.findUnique({
@@ -22,13 +39,7 @@ export class TransactionService {
       });
     }
 
-    return {
-      hash: trxn.transactionHash,
-      blockNumber: trxn.blockNumber,
-      timestamp: trxn.timestamp,
-      transactionType: trxn.eventType,
-      token: { id: trxn.tokenId },
-    };
+    return this.formatTransaction(trxn);
   }
 
   async findTransactionsByHash(transactionHashes: string[]) {
@@ -49,32 +60,7 @@ export class TransactionService {
       .map((trxnHash) =>
         trxns.find((trxn) => trxn.transactionHash === trxnHash),
       )
-      .map((trxnDetail) => ({
-        hash: trxnDetail.transactionHash,
-        blockNumber: trxnDetail.blockNumber,
-        timestamp: trxnDetail.timestamp,
-        transactionType: trxnDetail.eventType,
-        token: { id: trxnDetail.tokenId },
-      }));
-  }
-
-  async getTokenForTransaction(hash: string) {
-    const trxn = await this.prismaService.event.findUnique({
-      where: {
-        transactionHash: hash,
-      },
-      select: {
-        tokenId: true,
-      },
-    });
-
-    if (!trxn) {
-      throw new BadRequestException({
-        error: 'Invalid transaction hash',
-      });
-    }
-
-    return trxn.tokenId;
+      .map(this.formatTransaction);
   }
 
   async findAllTransactions(paginationArgs: PaginationArgs) {
@@ -86,12 +72,6 @@ export class TransactionService {
       },
     });
 
-    return trxn.map((trxn) => ({
-      hash: trxn.transactionHash,
-      blockNumber: trxn.blockNumber,
-      timestamp: trxn.timestamp,
-      transactionType: trxn.eventType,
-      token: { id: trxn.tokenId },
-    }));
+    return trxn.map(this.formatTransaction);
   }
 }

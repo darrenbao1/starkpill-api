@@ -2,22 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
-  address: String!
-  tokens: [Token!]!
-  numberOfTokensOwned: Int!
-  transactions: [Transaction!]!
-}
-
-type Token {
-  id: Int!
-  transactions: [Transaction!]!
-  owner: User!
-  mintPrice: String!
-  background: Int!
-  ingredient: Int!
-}
-
 type ChangeAttribute {
   oldBackground: Int!
   oldIngredient: Int!
@@ -59,6 +43,22 @@ enum TransactionType {
   MINT
   TRANSFER
   CHANGE_ATTRIBUTE
+}
+
+type User {
+  address: String!
+  tokens: [Token!]!
+  numberOfTokensOwned: Int!
+  transactions: [Transaction!]!
+}
+
+type Token {
+  id: Int!
+  transactions: [Transaction!]!
+  owner: User!
+  mintPrice: String!
+  background: Int!
+  ingredient: Int!
 }
 
 type Query {

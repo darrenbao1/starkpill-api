@@ -8,21 +8,23 @@ export class TokenService {
   constructor(private readonly prismaService: PrismaService) {}
 
   private getTokenDetails(
-    transactions: (Event & {
+    rawTrxns: (Event & {
       Mint: Mint;
       ChangeAttribute: ChangeAttribute;
       Transfer: Transfer;
     })[],
     id: number,
   ) {
-    const owner = transactions[transactions.length - 1].to;
-    const mintPrice = transactions
+    const owner = rawTrxns[rawTrxns.length - 1].to;
+    const mintPrice = rawTrxns
       .find((trxn) => trxn.eventType === 'MINT')
       .Mint.mintPrice.toString();
-    const latestChangeAttributeOrMint = transactions.find(
+
+    const latestChangeAttributeOrMint = rawTrxns.find(
       (trxn) =>
         trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
     );
+
     const background =
       latestChangeAttributeOrMint.eventType === 'MINT'
         ? latestChangeAttributeOrMint.Mint.background
@@ -32,9 +34,17 @@ export class TokenService {
         ? latestChangeAttributeOrMint.Mint.ingredient
         : latestChangeAttributeOrMint.ChangeAttribute.newIngredient;
 
+    const transactions = rawTrxns.map((trxn) => ({
+      hash: trxn.transactionHash,
+      token: { id: trxn.tokenId },
+      blockNumber: trxn.blockNumber,
+      timestamp: trxn.timestamp,
+      transactionType: trxn.eventType,
+    }));
+
     return {
       id,
-      owner: { address: owner }, // Technically doesn't need to be added here as it's in a ResolveField, but it helps optimising the query when only the address is needed
+      owner: { address: owner },
       mintPrice,
       transactions,
       background,
@@ -71,28 +81,6 @@ export class TokenService {
     return tokenTransactions.map((trxns) =>
       this.getTokenDetails(trxns, trxns[0].tokenId),
     );
-  }
-
-  async getTransactions(tokenId: number) {
-    const allTrxn = await this.prismaService.event.findMany({
-      include: {
-        Transfer: true,
-        ChangeAttribute: true,
-        Mint: true,
-      },
-      where: {
-        tokenId,
-      },
-    });
-
-    return allTrxn.map((trxn) => ({
-      hash: trxn.transactionHash,
-      // tokenId is placed in a nested object to match the schema so it triggers the @ResolveField in token.resolver
-      token: { id: trxn.tokenId },
-      blockNumber: trxn.blockNumber,
-      timestamp: trxn.timestamp,
-      transactionType: trxn.eventType,
-    }));
   }
 
   // Find all tokens that have been minted

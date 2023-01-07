@@ -1,6 +1,8 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TransactionType } from '../shared/enums';
+import { GraphqlFields } from '../shared/graphql-fields.decorator';
 import { PaginationArgs } from '../shared/pagination.args';
 import { Token } from '../token/model/token.model';
 import { TokenService } from '../token/token.service';
@@ -41,6 +43,10 @@ export class TransactionResolver {
 
   @ResolveField(() => Mint)
   async mint(@Parent() transaction: Transaction) {
+    if (transaction.transactionType !== TransactionType.MINT) {
+      return null;
+    }
+
     const mintTrxn = await this.prismaService.event.findFirst({
       where: {
         transactionHash: { equals: transaction.hash, mode: 'insensitive' },
@@ -63,6 +69,10 @@ export class TransactionResolver {
 
   @ResolveField(() => Transfer)
   async transfer(@Parent() transaction: Transaction) {
+    if (transaction.transactionType !== TransactionType.TRANSFER) {
+      return null;
+    }
+
     const transferTrxn = await this.prismaService.event.findFirst({
       where: {
         transactionHash: { equals: transaction.hash, mode: 'insensitive' },
@@ -83,6 +93,10 @@ export class TransactionResolver {
 
   @ResolveField(() => ChangeAttribute)
   async changeAttribute(@Parent() transaction: Transaction) {
+    if (transaction.transactionType !== TransactionType.CHANGE_ATTRIBUTE) {
+      return null;
+    }
+
     const changeAttributeTrxn = await this.prismaService.event.findFirst({
       where: {
         transactionHash: { equals: transaction.hash, mode: 'insensitive' },
@@ -102,7 +116,14 @@ export class TransactionResolver {
   }
 
   @ResolveField(() => Token)
-  async token(@Parent() transaction: Transaction) {
+  async token(
+    @Parent() transaction: Transaction,
+    @GraphqlFields() fields: string[],
+  ) {
+    if (fields.length === 1 && fields[0] === 'id') {
+      return transaction.token;
+    }
+
     return this.tokenService.findTokenById(transaction.token.id);
   }
 }
