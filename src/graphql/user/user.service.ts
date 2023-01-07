@@ -33,26 +33,11 @@ export class UserService {
 
   async findTokenIdsOwnedByUser(address: string): Promise<number[]> {
     const transactions = await this.prismaService.event.findMany({
-      include: {
-        Transfer: true,
-      },
       where: {
-        OR: [
-          {
-            to: {
-              equals: address,
-              mode: 'insensitive',
-            },
-          },
-          {
-            Transfer: {
-              from: {
-                equals: address,
-                mode: 'insensitive',
-              },
-            },
-          },
-        ],
+        to: {
+          equals: address,
+          mode: 'insensitive',
+        },
         NOT: {
           eventType: 'CHANGE_ATTRIBUTE',
         },

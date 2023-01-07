@@ -1,5 +1,5 @@
 import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
 
