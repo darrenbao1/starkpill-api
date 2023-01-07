@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { EventType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -96,24 +95,14 @@ export class TransactionResolver {
       return null;
     }
 
-    const { oldBackground, newBackground, oldIngredient, newIngredient } =
-      changeAttributeTrxn.ChangeAttribute;
-
     return {
-      oldBackground,
-      newBackground,
-      oldIngredient,
-      newIngredient,
+      ...changeAttributeTrxn.ChangeAttribute,
       callee: { address: changeAttributeTrxn.to },
     };
   }
 
   @ResolveField(() => Token)
   async token(@Parent() transaction: Transaction) {
-    const tokenId = await this.transactionService.getTokenForTransaction(
-      transaction.hash,
-    );
-
-    return this.tokenService.findTokenById(tokenId);
+    return this.tokenService.findTokenById(transaction.token.id);
   }
 }

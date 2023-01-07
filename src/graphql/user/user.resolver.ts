@@ -9,7 +9,6 @@ import {
 import { Token } from '../token/model/token.model';
 import { TokenService } from '../token/token.service';
 import { Transaction } from '../transaction/model/transaction.model';
-import { TransactionService } from '../transaction/transaction.service';
 import { User } from './models/user.model';
 import { UserService } from './user.service';
 
@@ -18,12 +17,11 @@ export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-    private readonly transactionsService: TransactionService,
   ) {}
 
   @Query(() => User)
   user(@Args('address', { type: () => String }) address: string) {
-    return this.userService.findUserByAddress(address);
+    return { address };
   }
 
   @ResolveField(() => Int)
@@ -38,21 +36,11 @@ export class UserResolver {
       user.address,
     );
 
-    const tokens = await this.tokenService.findTokensById(tokensIdsOwned);
-
-    return tokens.map((token) => ({
-      id: token.id,
-      transactions: token.transactions,
-      owner: token.owner,
-      mintPrice: token.mintPrice,
-      background: token.background,
-      ingredient: token.ingredient,
-    }));
+    return this.tokenService.findTokensById(tokensIdsOwned);
   }
 
   @ResolveField(() => [Transaction])
-  async transactions(@Parent() user: User) {
-    const trxnIds = await this.userService.findTransactionsByUser(user.address);
-    return this.transactionsService.findTransactionsByHash(trxnIds);
+  transactions(@Parent() user: User) {
+    return this.userService.findTransactionsByUser(user.address);
   }
 }
