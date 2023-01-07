@@ -1,50 +1,38 @@
+import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
-
 @Injectable()
 export class TokenService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findTokenById(tokenId: number) {
-    const latestChangeAttributeOrMintPromise =
-      this.prismaService.event.findFirst({
-        include: {
-          ChangeAttribute: true,
-          Mint: true,
-        },
-        where: {
-          tokenId,
-          NOT: {
-            eventType: 'TRANSFER',
-          },
-        },
-        orderBy: {
-          blockNumber: 'desc',
-        },
-      });
-
-    // run above promises concurrently as they are independent
-    const [owner, mintPrice, transactions, latestChangeAttributeOrMint] =
-      await Promise.all([
-        this.getOwner(tokenId),
-        this.getMintingPrice(tokenId),
-        this.getTransactions(tokenId),
-        latestChangeAttributeOrMintPromise,
-      ]);
-
+  private getTokenDetails(
+    transactions: (Event & {
+      Mint: Mint;
+      ChangeAttribute: ChangeAttribute;
+      Transfer: Transfer;
+    })[],
+    id: number,
+  ) {
+    const owner = transactions[transactions.length - 1].to;
+    const mintPrice = transactions
+      .find((trxn) => trxn.eventType === 'MINT')
+      .Mint.mintPrice.toString();
+    const latestChangeAttributeOrMint = transactions.find(
+      (trxn) =>
+        trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
+    );
     const background =
       latestChangeAttributeOrMint.eventType === 'MINT'
         ? latestChangeAttributeOrMint.Mint.background
         : latestChangeAttributeOrMint.ChangeAttribute.newBackground;
-
     const ingredient =
       latestChangeAttributeOrMint.eventType === 'MINT'
         ? latestChangeAttributeOrMint.Mint.ingredient
         : latestChangeAttributeOrMint.ChangeAttribute.newIngredient;
 
     return {
-      id: tokenId,
+      id,
       owner,
       mintPrice,
       transactions,
@@ -53,8 +41,35 @@ export class TokenService {
     };
   }
 
-  findTokensById(tokenIds: number[]) {
-    return Promise.all(tokenIds.map((tokenId) => this.findTokenById(tokenId)));
+  async findTokenById(tokenId: number) {
+    const transactions = await this.prismaService.event.findMany({
+      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      where: { tokenId: tokenId },
+      orderBy: { blockNumber: 'desc' },
+    });
+
+    return this.getTokenDetails(transactions, tokenId);
+  }
+
+  async findTokensById(tokenIds: number[]) {
+    const transactions = await this.prismaService.event.findMany({
+      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      where: {
+        tokenId: {
+          in: tokenIds,
+        },
+      },
+      orderBy: { blockNumber: 'desc' },
+    });
+
+    // each sub array contains all transactions for a token, sorted by block number  in descending order
+    const tokenTransactions = tokenIds.map((tokenId) =>
+      transactions.filter((trxn) => trxn.tokenId === tokenId),
+    );
+
+    return tokenTransactions.map((trxns) =>
+      this.getTokenDetails(trxns, trxns[0].tokenId),
+    );
   }
 
   async getOwner(tokenId: number) {
@@ -81,25 +96,6 @@ export class TokenService {
     }
 
     return { address: latestMintOrTransfer?.to };
-  }
-
-  private async getMintingPrice(tokenId: number) {
-    const mintTrxn = await this.prismaService.event.findFirst({
-      include: {
-        Mint: true,
-      },
-      where: {
-        tokenId,
-      },
-    });
-
-    if (!mintTrxn) {
-      throw new BadRequestException({
-        error: 'Invalid tokenId',
-      });
-    }
-
-    return mintTrxn?.Mint?.mintPrice.toString();
   }
 
   async getTransactions(tokenId: number) {
