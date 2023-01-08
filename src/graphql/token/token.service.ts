@@ -16,7 +16,7 @@ export class TokenService {
     })[],
     id: number,
   ) {
-    const owner = rawTrxns[rawTrxns.length - 1].to;
+    const owner = rawTrxns[0].to; // get the first trxn as it's sorted in descending order
 
     const latestChangeAttributeOrMint = rawTrxns.find(
       (trxn) =>

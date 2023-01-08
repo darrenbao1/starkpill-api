@@ -186,6 +186,11 @@ export class BlocksService {
         ?.lastIndexedBlock ?? 500000 // replace with seeded value
     );
   }
+
+  async getLastIndexedBlockTime() {
+    return (await this.prismaService.metadata.findFirst({ where: { id: 1 } }))
+      ?.lastIndexedTime;
+  }
 }
 
 /** Priority Queue
