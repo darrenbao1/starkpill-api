@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import {
-  INDEX_METADATA,
-  // INDEX_MULTIPLE_METADATA,
-  JOB_SETTINGS,
-  METADATA_QUEUE,
-} from '../constants';
+import { INDEX_METADATA, JOB_SETTINGS, METADATA_QUEUE } from '../constants';
 import { getMetadataFromContract } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TokenService } from 'src/graphql/token/token.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class MetadataService {
@@ -19,6 +15,7 @@ export class MetadataService {
     private readonly prismaService: PrismaService,
   ) {}
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async queueGetMissingMetadata() {
     // find all the tokens that don't have metadata
     // and add them to the queue
@@ -40,7 +37,6 @@ export class MetadataService {
     const missingTokenIds = allTokenIds.filter(
       (token) => !presentTokenIds.includes(token),
     );
-    console.log(missingTokenIds);
 
     missingTokenIds.forEach((id) => this.queueIndexMetadata(id));
   }
@@ -58,13 +54,8 @@ export class MetadataService {
       .filter((job) => job.name === INDEX_METADATA)
       .map((job) => job.data) as number[];
 
-    // console.log('waiting jobs:');
-    // console.log(waitingJobs);
     if (!waitingJobs.includes(id)) {
-      console.log('job added', id);
       this.metadataQueue.add(INDEX_METADATA, id, JOB_SETTINGS);
-    } else {
-      console.log('job already in queue', id);
     }
   }
 

@@ -11,12 +11,14 @@ import {
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
 import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
+import { MetadataModule } from '../metadata/metadata.module';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: BLOCKS_QUEUE,
     }),
+    MetadataModule,
   ],
   providers: [BlocksService, BlocksProcessor],
   exports: [BlocksService, BullModule],
@@ -87,9 +89,5 @@ export class BlocksModule {
         this.indexer.handleInvalidate(msg.invalidate);
       }
     });
-  }
-
-  async onModuleInit() {
-    // this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
   }
 }

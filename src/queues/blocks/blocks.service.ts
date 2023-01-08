@@ -15,11 +15,13 @@ import {
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
+import { MetadataService } from '../metadata/metadata.service';
 
 @Injectable()
 export class BlocksService {
   constructor(
     @InjectQueue(BLOCKS_QUEUE) private readonly blocksQueue: Queue,
+    private readonly metadataService: MetadataService,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -109,6 +111,9 @@ export class BlocksService {
       console.log('Minting');
       console.log(result);
     }
+
+    // Update the token metadata table, don't need to await as it's a side effect
+    this.metadataService.queueIndexMetadata(tokenId);
   }
 
   async handleTransfer({ from, ...eventData }: TransferData) {
