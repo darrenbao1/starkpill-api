@@ -83,4 +83,6 @@ enum OrderBy {
 
 type Mutation {
   mutation: String!
+  refreshMetadataForOneToken(tokenId: Int!): String!
+  refreshMetadataForAllTokens: String!
 }

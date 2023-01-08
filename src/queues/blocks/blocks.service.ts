@@ -163,8 +163,8 @@ export class BlocksService {
   async markBlockAsIndexed(lastIndexedBlock: number) {
     await this.prismaService.metadata.upsert({
       where: { id: 1 },
-      update: { lastIndexedBlock },
-      create: { lastIndexedBlock },
+      update: { lastIndexedBlock, lastIndexedTime: new Date() },
+      create: { lastIndexedBlock, lastIndexedTime: new Date() },
     });
   }
 

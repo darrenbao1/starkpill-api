@@ -6,7 +6,7 @@ import { RootModule } from './root/root.module';
 import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
-import { GraphqlResolver } from './graphql.resolver';
+import { MetadataModule } from './metadata/metadata.module';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { GraphqlResolver } from './graphql.resolver';
     TokenModule,
     TransactionModule,
     UserModule,
-    GraphqlResolver,
+    MetadataModule,
   ],
   providers: [],
 })

@@ -6,16 +6,18 @@ import { Queue } from 'bull';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import expressBasicAuth from 'express-basic-auth';
 import { ConfigService } from '@nestjs/config';
-import { BLOCKS_QUEUE } from './constants';
+import { BLOCKS_QUEUE, METADATA_QUEUE } from './constants';
 import { BlocksModule } from './blocks/blocks.module';
+import { MetadataModule } from './metadata/metadata.module';
 
 @Module({
-  imports: [BlocksModule],
-  exports: [BlocksModule],
+  imports: [BlocksModule, MetadataModule],
+  exports: [BlocksModule, MetadataModule], // TODO: remove this export
 })
 export class QueuesModule {
   constructor(
     @InjectQueue(BLOCKS_QUEUE) private readonly blocksQueue: Queue,
+    @InjectQueue(METADATA_QUEUE) private readonly metadataQueue: Queue,
     private readonly configService: ConfigService,
   ) {}
 
@@ -27,7 +29,10 @@ export class QueuesModule {
     const serverAdapter = new ExpressAdapter();
 
     createBullBoard({
-      queues: [new BullAdapter(this.blocksQueue)],
+      queues: [
+        new BullAdapter(this.blocksQueue),
+        new BullAdapter(this.metadataQueue),
+      ],
       serverAdapter,
     });
 

@@ -1,4 +1,4 @@
-import { hash } from 'starknet';
+import { Abi, Contract, hash, Provider, number, uint256 } from 'starknet';
 
 export enum EventName {
   Prescription_Updated = 'PrescriptionUpdated',
@@ -43,6 +43,60 @@ export const decodeTransfer = (eventData: string[]) => {
     to,
     tokenId: parseInt(tokenId, 16),
   };
+};
+
+export const hex2a = (hexx: string) => {
+  const hex = hexx.toString(); //force conversion
+  let str = '';
+  for (let i = 0; i < hex.length; i += 2) {
+    // TODO: Fix deprecation
+    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16)).replace(
+      '\x00',
+      '',
+    );
+  }
+  str = str.replace('data:application/json,', '');
+  return str;
+};
+
+import testpillAbi from 'src/abi/testpill.json';
+
+interface TokenMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes: [
+    { trait_type: 'Medical Bill'; value: number },
+    { trait_type: 'Ingredient'; value: string },
+    { trait_type: 'Background'; value: string },
+  ];
+}
+
+export const getMetadataFromContract = async (id: number) => {
+  const provider = new Provider({ sequencer: { network: 'goerli-alpha' } });
+  const contract = new Contract(testpillAbi as Abi, CONTRACT_ADDRESS, provider);
+
+  const contractUriRaw = await contract.call('tokenURI', [
+    uint256.bnToUint256(number.toBN(id)),
+  ]);
+
+  const resultArray = contractUriRaw.map((data) =>
+    number.bigNumberishArrayToHexadecimalStringArray(data),
+  );
+
+  const jsonMetadata: TokenMetadata = JSON.parse(
+    resultArray[0].map((json) => hex2a(json)).join(''),
+  );
+
+  const description = jsonMetadata.description;
+  const image = jsonMetadata.image;
+  const atributes = jsonMetadata.attributes;
+  // !: If '' is returned for ingredient or background, it means there's no value
+  const mintPrice = atributes[0]?.value ?? 0;
+  const ingredient = atributes[1]?.value ?? '';
+  const background = atributes[2]?.value ?? '';
+
+  return { id, description, image, mintPrice, ingredient, background };
 };
 
 interface TrxnData {
