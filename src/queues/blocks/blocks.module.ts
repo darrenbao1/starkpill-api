@@ -9,7 +9,10 @@ import {
   StreamMessagesStream,
 } from '@apibara/protocol';
 import { AppIndexer } from 'src/indexing/AppIndexer';
-import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
+import {
+  INTERVAL_STREAM_CHECK,
+  RESTART_STREAM_AFTER,
+} from 'src/indexing/utils';
 import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
 import { MetadataModule } from '../metadata/metadata.module';
 
@@ -29,6 +32,7 @@ export class BlocksModule {
   private indexer: AppIndexer;
   private messages: StreamMessagesStream;
   private node: NodeClient;
+  private interval: NodeJS.Timeout;
 
   private takesTooLongTimeout: NodeJS.Timeout;
 
@@ -54,8 +58,7 @@ export class BlocksModule {
       // recreate stream
       console.log('error occured in stream');
       console.log(err);
-      this.messages.destroy();
-      this.createStream((await this.blocksService.getLastIndexedBlock()) + 1); // change to last indexed block + 1
+      this.restartStream();
     });
 
     this.messages.on('data', (msg: StreamMessagesResponse__Output) => {
@@ -64,12 +67,7 @@ export class BlocksModule {
         // ensure that the stream doesn't get stuck
         this.takesTooLongTimeout = setTimeout(async () => {
           console.log('restarting because it took too long');
-          this.messages.destroy();
-          this.messages.cleanupSource();
-
-          const blockToRestartFrom =
-            (await this.blocksService.getLastIndexedBlock()) + 1;
-          this.createStream(blockToRestartFrom); // change to last indexed block + 1
+          this.restartStream();
         }, RESTART_STREAM_AFTER);
 
         const indexedDataArr = this.indexer.handleData(msg.data);
@@ -91,7 +89,34 @@ export class BlocksModule {
     });
   }
 
+  async restartStream() {
+    console.log('restarting stream');
+    this.messages.destroy();
+    this.messages.cleanupSource();
+
+    const blockToRestartFrom =
+      (await this.blocksService.getLastIndexedBlock()) + 1;
+    this.createStream(blockToRestartFrom); // change to last indexed block + 1
+  }
+
   async onModuleInit() {
     this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
+
+    this.interval = setInterval(async () => {
+      const lastIndexedTime =
+        await this.blocksService.getLastIndexedBlockTime();
+
+      if (!lastIndexedTime) {
+        return;
+      }
+
+      const restart =
+        new Date().getTime() - lastIndexedTime.getTime() >
+        INTERVAL_STREAM_CHECK;
+
+      if (restart) {
+        this.restartStream();
+      }
+    }, INTERVAL_STREAM_CHECK);
   }
 }

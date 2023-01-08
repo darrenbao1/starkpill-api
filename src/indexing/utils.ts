@@ -19,6 +19,7 @@ export const NULL_FELT =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 export const RESTART_STREAM_AFTER = 2 * 60 * 1000; // Restart the stream if no block has been received after 2min
+export const INTERVAL_STREAM_CHECK = 10 * 60 * 1000; // Use an interval to check if the stream is still alive every 10 min
 
 export const uint8ToString = (uint8Arr: Uint8Array) => {
   let result = '0x';
