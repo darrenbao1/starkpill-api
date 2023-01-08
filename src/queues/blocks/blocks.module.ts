@@ -92,6 +92,7 @@ export class BlocksModule {
   }
 
   async onModuleInit() {
-    this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
+    // this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
+    this.createStream(606300);
   }
 }

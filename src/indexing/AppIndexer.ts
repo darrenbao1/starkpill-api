@@ -50,10 +50,16 @@ export class AppIndexer {
         const wrongContract = eventSource !== CONTRACT_ADDRESS;
         const wrongEvent =
           eventKey !== PRESCRIPTION_UPDATED_KEY && eventKey !== TRANSFER_KEY;
-        // ignore if transferred from contract or a null address
+
+        // ignore if transferred from or to NFT contract or a null address
         const irrelevantTransfer =
           eventKey === TRANSFER_KEY &&
-          [NULL_FELT, CONTRACT_ADDRESS].includes(uint8ToString(event.data[0]));
+          ([NULL_FELT, CONTRACT_ADDRESS].includes(
+            uint8ToString(event.data[0]),
+          ) ||
+            [NULL_FELT, CONTRACT_ADDRESS].includes(
+              uint8ToString(event.data[1]),
+            ));
 
         if (wrongContract || wrongEvent || irrelevantTransfer) {
           continue;

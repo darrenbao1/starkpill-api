@@ -50,6 +50,7 @@ export class MetadataService {
   }
 
   async queueIndexMetadata(id: number) {
+    console.log('queueIndexMetadata service');
     const waitingJobs = (await this.metadataQueue.getWaiting())
       .filter((job) => job.name === INDEX_METADATA)
       .map((job) => job.data) as number[];

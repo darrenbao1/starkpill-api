@@ -8,7 +8,7 @@ export class PaginationArgs {
   @Min(0)
   skip?: number;
 
-  @Field(() => Int, { nullable: true, defaultValue: 100 })
+  @Field(() => Int, { nullable: true, defaultValue: 20 })
   @Min(1)
   first?: number;
 

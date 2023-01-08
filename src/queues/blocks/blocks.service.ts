@@ -112,6 +112,7 @@ export class BlocksService {
       console.log(result);
     }
 
+    console.log('changing tokenId', tokenId);
     // Update the token metadata table, don't need to await as it's a side effect
     this.metadataService.queueIndexMetadata(tokenId);
   }

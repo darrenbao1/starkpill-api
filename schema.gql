@@ -73,10 +73,10 @@ type Query {
   query: String!
   token(tokenId: Int!): Token!
   tokens(tokenIds: [Int!]!): [Token!]!
-  allTokens(skip: Int = 0, first: Int = 100, orderBy: OrderBy = DESC): [Token!]!
+  allTokens(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
   transaction(transactionHash: String!): Transaction!
   transactions(transactionHashes: [String!]!): [Transaction!]!
-  allTransactions(skip: Int = 0, first: Int = 100, orderBy: OrderBy = DESC): [Transaction!]!
+  allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!
   user(address: String!): User!
   lastIndexedBlock: Int!
 }
