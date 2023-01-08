@@ -10,7 +10,6 @@ import {
 } from '@apibara/protocol';
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import { RESTART_STREAM_AFTER } from 'src/indexing/utils';
-import { PrismaModule } from 'src/prisma/prisma.module';
 import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
 
 @Module({
@@ -18,7 +17,6 @@ import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
     BullModule.registerQueue({
       name: BLOCKS_QUEUE,
     }),
-    PrismaModule,
   ],
   providers: [BlocksService, BlocksProcessor],
   exports: [BlocksService, BullModule],

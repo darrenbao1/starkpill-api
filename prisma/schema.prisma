@@ -9,17 +9,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Should only have 1 row
-model metadata {
-  id               Int @id @default(1)
-  lastIndexedBlock Int 
-}
-
 // 3 types of trxn: mint transfer, change attribute
 enum EventType {
   MINT
   TRANSFER
   CHANGE_ATTRIBUTE
+}
+
+// Should only have 1 row
+model metadata {
+  id               Int @id @default(1)
+  lastIndexedBlock Int
+}
+
+model TokenMetadata {
+  id          Int    @id
+  description String
+  image       String
+  ingredient  String
+  background  String
+  // Event       Event[]
 }
 
 model Event {
@@ -29,6 +38,8 @@ model Event {
   blockNumber     Int
   timestamp       DateTime
   eventType       EventType
+  // Many events can have the same token
+  // token           TokenMetadata? @relation(fields: [tokenId], references: [id])
 
   Mint            Mint?
   ChangeAttribute ChangeAttribute?
