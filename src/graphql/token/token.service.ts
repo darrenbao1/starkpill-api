@@ -17,9 +17,6 @@ export class TokenService {
     id: number,
   ) {
     const owner = rawTrxns[rawTrxns.length - 1].to;
-    const mintPrice = rawTrxns
-      .find((trxn) => trxn.eventType === 'MINT')
-      .Mint.mintPrice.toString();
 
     const latestChangeAttributeOrMint = rawTrxns.find(
       (trxn) =>
@@ -40,7 +37,6 @@ export class TokenService {
     return {
       id,
       owner: { address: owner },
-      mintPrice,
       transactions,
       background,
       ingredient,
@@ -92,5 +88,16 @@ export class TokenService {
     });
 
     return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
+  }
+
+  async findMetadataByTokenId(id: number) {
+    const metadata = await this.prismaService.tokenMetadata.findFirst({
+      where: { id },
+    });
+
+    return {
+      ...metadata,
+      mintPrice: metadata.mintPrice.toString(),
+    };
   }
 }

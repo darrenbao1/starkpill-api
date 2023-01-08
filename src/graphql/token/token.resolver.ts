@@ -1,4 +1,12 @@
-import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
+import { Metadata } from '../metadata/model/metadata.model';
 import { PaginationArgs } from '../shared/pagination.args';
 import { Token } from './model/token.model';
 import { TokenService } from './token.service';
@@ -21,5 +29,10 @@ export class TokenResolver {
   @Query(() => [Token])
   async allTokens(@Args() paginationArgs: PaginationArgs) {
     return this.tokenService.findAllTokens(paginationArgs);
+  }
+
+  @ResolveField(() => Metadata)
+  async metadata(@Parent() token: Token) {
+    return this.tokenService.findMetadataByTokenId(token.id);
   }
 }

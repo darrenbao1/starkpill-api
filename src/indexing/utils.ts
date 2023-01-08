@@ -89,14 +89,14 @@ export const getMetadataFromContract = async (id: number) => {
   );
 
   const description = jsonMetadata.description;
-  const image = jsonMetadata.image;
+  const imageUrl = jsonMetadata.image;
   const atributes = jsonMetadata.attributes;
   // !: If '' is returned for ingredient or background, it means there's no value
   const mintPrice = atributes[0]?.value ?? 0;
   const ingredient = atributes[1]?.value ?? '';
   const background = atributes[2]?.value ?? '';
 
-  return { id, description, image, mintPrice, ingredient, background };
+  return { id, description, imageUrl, mintPrice, ingredient, background };
 };
 
 interface TrxnData {

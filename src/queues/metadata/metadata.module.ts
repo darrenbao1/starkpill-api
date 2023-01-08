@@ -18,7 +18,6 @@ import { MetadataService } from './metadata.service';
 export class MetadataModule {
   constructor(private readonly metadataService: MetadataService) {}
 
-  // TODO: Add queue to run every 15min
   async onModuleInit() {
     this.metadataService.queueGetMissingMetadata();
   }

@@ -1,4 +1,5 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { Metadata } from 'src/graphql/metadata/model/metadata.model';
 import { User } from 'src/graphql/user/models/user.model';
 import { Transaction } from '../../transaction/model/transaction.model';
 
@@ -13,12 +14,12 @@ export class Token {
   @Field(() => User)
   owner: User;
 
-  @Field(() => String)
-  mintPrice: string;
-
   @Field(() => Int)
   background: number;
 
   @Field(() => Int)
   ingredient: number;
+
+  @Field(() => Metadata)
+  metadata: Metadata;
 }

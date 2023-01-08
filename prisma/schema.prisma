@@ -26,7 +26,7 @@ model metadata {
 model TokenMetadata {
   id          Int    @id
   description String
-  image       String
+  imageUrl       String
   ingredient  String
   background  String
   mintPrice   BigInt
