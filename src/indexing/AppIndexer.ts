@@ -37,7 +37,7 @@ export class AppIndexer {
     const block = Block.decode(data.data.value);
     console.log('Block Number: ' + block.blockNumber);
     const eventsArr: IndexBlockData[] = [];
-
+    let lastPrescriptionUpdatedEvent;
     for (const trxn of block.transactionReceipts) {
       for (const event of trxn.events) {
         if (!event.keys[0] || !event.fromAddress || !event.data[0]) {
@@ -79,13 +79,13 @@ export class AppIndexer {
         // once an event is found, add it to the array and continue to the next trxn as each trxn only has one indexed event
         // e.g. a mint event also has transfer events, but will be ignored
         if (eventType === EventName.Prescription_Updated) {
-          eventsArr.push({
+          lastPrescriptionUpdatedEvent= {
             eventType,
             data: {
               ...decodePrescriptionUpdated(eventData),
               ...commonData,
             } as PrescriptionUpdatedData,
-          });
+          } as IndexBlockData ;
 
           continue;
         } else if (eventType === EventName.Transfer) {
@@ -101,6 +101,9 @@ export class AppIndexer {
         }
       }
     }
+    if (lastPrescriptionUpdatedEvent) {
+      eventsArr.push(lastPrescriptionUpdatedEvent);
+  }
 
     return eventsArr;
   }
