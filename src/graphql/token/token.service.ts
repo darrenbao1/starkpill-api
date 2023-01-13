@@ -79,12 +79,15 @@ export class TokenService {
     const tokenIds = await this.prismaService.mint.findMany({
       take: paginationArgs.first,
       skip: paginationArgs.skip,
-      orderBy: {
-        mintPrice: paginationArgs.orderBy,
-      },
       include: {
         event: true,
       },
+      orderBy: [{
+        mintPrice: 'desc'  
+      },{
+        event: 
+        {tokenId: "asc"}
+      }]
     });
 
     return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
