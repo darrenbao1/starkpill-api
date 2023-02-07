@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Mint" ALTER COLUMN "mintPrice" SET DATA TYPE DECIMAL(50,0);
+
+-- AlterTable
+ALTER TABLE "TokenMetadata" ALTER COLUMN "mintPrice" SET DATA TYPE DECIMAL(50,0);

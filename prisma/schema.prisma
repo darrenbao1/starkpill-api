@@ -24,12 +24,12 @@ model metadata {
 }
 
 model TokenMetadata {
-  id          Int    @id
+  id          Int     @id
   description String
-  imageUrl       String
+  imageUrl    String
   ingredient  String
   background  String
-  mintPrice   BigInt
+  mintPrice   Decimal @db.Decimal(50, 0)
 }
 
 model Event {
@@ -47,9 +47,9 @@ model Event {
 }
 
 model Mint {
-  transactionHash String @id
-  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
-  mintPrice       BigInt
+  transactionHash String  @id
+  event           Event   @relation(fields: [transactionHash], references: [transactionHash])
+  mintPrice       Decimal @db.Decimal(50, 0)
   // these are the ids of the background and ingredient NFTs associated with this NFT
   background      Int
   ingredient      Int

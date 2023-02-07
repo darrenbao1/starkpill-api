@@ -73,24 +73,36 @@ export class TokenService {
       this.getTokenDetails(trxns, trxns[0].tokenId),
     );
   }
+  // Find all tokens that have been minted (roy's method)
+  // async findAllTokens(paginationArgs: PaginationArgs) {
+  //   const tokenIds = await this.prismaService.mint.findMany({
+  //     take: paginationArgs.first,
+  //     skip: paginationArgs.skip,
+  //     include: {
+  //       event: true,
+  //     },
+  //     orderBy: [{
+  //       mintPrice: 'desc'  
+  //     },{
+  //       event: 
+  //       {tokenId: "asc"}
+  //     }]
+  //   });
 
-  // Find all tokens that have been minted
+  //   return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
+  // }
+  //new find all tokens function using darren method
   async findAllTokens(paginationArgs: PaginationArgs) {
-    const tokenIds = await this.prismaService.mint.findMany({
+    const tokenIds = await this.prismaService.tokenMetadata.findMany({
       take: paginationArgs.first,
       skip: paginationArgs.skip,
-      include: {
-        event: true,
-      },
       orderBy: [{
-        mintPrice: 'desc'  
+        mintPrice: 'desc'
       },{
-        event: 
-        {tokenId: "asc"}
+        id: "asc"
       }]
     });
-
-    return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
+    return this.findTokensById(tokenIds.map((token) => token.id));
   }
 
   async findMetadataByTokenId(id: number) {
