@@ -65,8 +65,8 @@ export class BlocksModule {
       .encode();
     this.client.configure({
       filter: this.filter,
-      batchSize: 10,
-      finality: v1alpha2.DataFinality.DATA_STATUS_FINALIZED,
+      batchSize: 5,
+      finality: v1alpha2.DataFinality.DATA_STATUS_ACCEPTED,
       cursor: this.cursor,
     });
     for await (const message of this.client) {
@@ -83,7 +83,7 @@ export class BlocksModule {
             );
           }
           this.blocksService.queueMarkBlockAsIndexed(blockNumber);
-        } 
+        }
       }
     }
   }
