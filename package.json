@@ -22,8 +22,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@apibara/protocol": "^0.3.0",
-    "@apibara/starknet": "^0.1.1",
+    "@apibara/protocol": "^0.4.4",
+    "@apibara/starknet": "^0.2.0-next.0",
     "@bull-board/express": "^4.9.0",
     "@nestjs/apollo": "^10.1.7",
     "@nestjs/bull": "^0.6.2",
@@ -34,6 +34,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^2.1.0",
     "@prisma/client": "^4.8.0",
+    "add": "^2.0.6",
     "apollo-server-express": "^3.11.1",
     "bull": "^4.10.2",
     "class-validator": "^0.14.0",
@@ -41,6 +42,7 @@
     "graphql": "^16.6.0",
     "graphql-fields-list": "^2.2.4",
     "ioredis": "^5.2.4",
+    "npm": "^9.6.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",

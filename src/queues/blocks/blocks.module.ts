@@ -4,16 +4,20 @@ import { BLOCKS_QUEUE } from '../constants';
 import { BlocksProcessor } from './blocks.processor';
 import { BlocksService } from './blocks.service';
 import {
-  NodeClient,
-  credentials,
-  StreamMessagesStream,
+  StreamClient,
+  ChannelCredentials,
+  v1alpha2,
+  Cursor,
 } from '@apibara/protocol';
+import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import {
+  CONTRACT_ADDRESS,
   INTERVAL_STREAM_CHECK,
+  PRESCRIPTION_UPDATED_KEY,
   RESTART_STREAM_AFTER,
+  TRANSFER_KEY,
 } from 'src/indexing/utils';
-import { StreamMessagesResponse__Output } from '@apibara/protocol/dist/proto';
 import { MetadataModule } from '../metadata/metadata.module';
 
 @Module({
@@ -30,70 +34,62 @@ export class BlocksModule {
   constructor(private readonly blocksService: BlocksService) {}
 
   private indexer: AppIndexer;
-  private messages: StreamMessagesStream;
-  private node: NodeClient;
+  private filter: Uint8Array;
+  private client: StreamClient;
   private interval: NodeJS.Timeout;
-
+  private cursor: v1alpha2.ICursor;
   private takesTooLongTimeout: NodeJS.Timeout;
 
-  private createStream(initialBlock: number) {
+  private async createStream(initialBlock: number) {
+    //create stream
+    console.log('creating stream');
     this.indexer = new AppIndexer();
-
-    this.node = new NodeClient(
-      'goerli.starknet.stream.apibara.com:443',
-      credentials.createSsl(),
-    );
-
-    this.messages = this.node.streamMessages(
-      { startingSequence: initialBlock },
-      { onRetry: this.indexer.onRetry, reconnect: true },
-    );
-
-    this.messages.on('end', (msg: any) => {
-      console.log(msg);
-      console.log('stopping stream');
+    this.cursor = Cursor.createWithOrderKey(initialBlock);
+    this.client = new StreamClient({
+      url: 'goerli.starknet.a5a.ch',
+      credentials: ChannelCredentials.createSsl(),
+      token: 'dna_T592xChWn3oqO0p9aBq2',
     });
-
-    this.messages.on('error', async (err: any) => {
-      // recreate stream
-      console.log('error occured in stream');
-      console.log(err);
-      this.restartStream();
+    this.filter = Filter.create()
+      .withHeader()
+      //adding transfer event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([TRANSFER_KEY]),
+      )
+      //adding prescription updated event
+      .addEvent((ev) =>
+        ev
+          .withFromAddress(CONTRACT_ADDRESS)
+          .withKeys([PRESCRIPTION_UPDATED_KEY]),
+      )
+      .encode();
+    this.client.configure({
+      filter: this.filter,
+      batchSize: 10,
+      finality: v1alpha2.DataFinality.DATA_STATUS_FINALIZED,
+      cursor: this.cursor,
     });
-
-    this.messages.on('data', (msg: StreamMessagesResponse__Output) => {
-      if (msg.data) {
-        clearTimeout(this.takesTooLongTimeout);
-        // ensure that the stream doesn't get stuck
-        this.takesTooLongTimeout = setTimeout(async () => {
-          console.log('restarting because it took too long');
-          this.restartStream();
-        }, RESTART_STREAM_AFTER);
-
-        const indexedDataArr = this.indexer.handleData(msg.data);
-        const blockNumber = AppIndexer.getBlockNumber(msg.data);
-
-        if (indexedDataArr.length > 0) {
-          indexedDataArr.forEach((data) =>
-            this.blocksService.queueIndexBlockData(data),
+    for await (const message of this.client) {
+      if (message.data?.data) {
+        for (let item of message.data.data) {
+          const block = starknet.Block.decode(item);
+          const indexedDataArr = this.indexer.handleData(block);
+          const blockNumber = AppIndexer.getBlockNumber(
+            block.header.blockNumber.toString(),
           );
-        }
-
-        this.blocksService.queueMarkBlockAsIndexed(blockNumber);
-      } else if (msg.invalidate) {
-        this.blocksService.queueInvalidateBlocks(
-          Number(msg.invalidate.sequence),
-        );
-        this.indexer.handleInvalidate(msg.invalidate);
+          if (indexedDataArr.length > 0) {
+            indexedDataArr.forEach((data) =>
+              this.blocksService.queueIndexBlockData(data),
+            );
+          }
+          this.blocksService.queueMarkBlockAsIndexed(blockNumber);
+        } 
       }
-    });
+    }
   }
 
   async restartStream() {
     console.log('restarting stream');
-    this.messages.destroy();
-    this.messages.cleanupSource();
-
     const blockToRestartFrom =
       (await this.blocksService.getLastIndexedBlock()) + 1;
     this.createStream(blockToRestartFrom); // change to last indexed block + 1

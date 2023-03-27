@@ -1,6 +1,10 @@
-import { proto } from '@apibara/protocol';
-import { Block } from '@apibara/starknet';
-
+import {
+  StreamClient,
+  ChannelCredentials,
+  v1alpha2,
+  ConfigureArgs,
+} from '@apibara/protocol';
+import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
 import {
   TransferData,
   CONTRACT_ADDRESS,
@@ -20,115 +24,75 @@ import {
  * calls.
  */
 export class AppIndexer {
-  // protobuf encodes possibly-large numbers as strings
-  private currentSequence?: string;
-
-  static getBlockNumber(data: proto.Data__Output): number {
-    const block = Block.decode(data.data.value);
-    return block.blockNumber;
+  static getBlockNumber(data: string): number {
+    return Number(data);
   }
-
-  handleData(data: proto.Data__Output): IndexBlockData[] {
-    // track sequence number for reconnecting later
-    this.currentSequence = data.sequence;
-    if (!data.data?.value) {
-      return [];
-    }
-    const block = Block.decode(data.data.value);
-    console.log('Block Number: ' + block.blockNumber);
+  handleData(block: starknet.Block): IndexBlockData[] {
+    const blockNumber = block.header.blockNumber.toString();
+    console.log('Block Number: ' + blockNumber);
     const eventsArr: IndexBlockData[] = [];
     let lastPrescriptionUpdatedEvent;
-    for (const trxn of block.transactionReceipts) {
-      for (const event of trxn.events) {
-        if (!event.keys[0] || !event.fromAddress || !event.data[0]) {
-          continue;
-        }
-        const eventKey = uint8ToString(event.keys[0]);
-        const eventSource = uint8ToString(event.fromAddress);
-        const eventData = event.data.map((d) => uint8ToString(d));
-
-        const wrongContract = eventSource !== CONTRACT_ADDRESS;
-        const wrongEvent =
-          eventKey !== PRESCRIPTION_UPDATED_KEY && eventKey !== TRANSFER_KEY;
-
-        // ignore if transferred from or to NFT contract or a null address
-        const irrelevantTransfer =
-          eventKey === TRANSFER_KEY &&
-          ([NULL_FELT, CONTRACT_ADDRESS].includes(
-            uint8ToString(event.data[0]),
-          ) ||
-            [NULL_FELT, CONTRACT_ADDRESS].includes(
-              uint8ToString(event.data[1]),
-            ));
-
-        if (wrongContract || wrongEvent || irrelevantTransfer) {
-          continue;
-        }
-
-        const timestamp = block.timestamp;
-        const blockNumber = block.blockNumber;
-        const transactionHash = uint8ToString(trxn.transactionHash);
-
-        // TODO: Add a new event type of change prescription when the old prescription is null
-        const eventType =
-          eventKey === PRESCRIPTION_UPDATED_KEY
-            ? EventName.Prescription_Updated
-            : EventName.Transfer;
+    for (let { transaction, event } of block.events) {
+      const hash = transaction?.meta?.hash;
+      if (!event || !event.data || !hash) {
+        continue;
+      }
+      for (let eventKey of event.keys) {
+        const blockNumber = Number(block.header.blockNumber.toString());
+        const transactionHash = FieldElement.toHex(transaction.meta.hash);
+        const timestamp = new Date(
+          Number(block.header.timestamp.seconds.toString()) * 1000,
+        );
         const commonData = { timestamp, blockNumber, transactionHash };
-
-        // once an event is found, add it to the array and continue to the next trxn as each trxn only has one indexed event
-        // e.g. a mint event also has transfer events, but will be ignored
-        if (eventType === EventName.Prescription_Updated) {
-          lastPrescriptionUpdatedEvent= {
-            eventType,
-            data: {
-              ...decodePrescriptionUpdated(eventData),
-              ...commonData,
-            } as PrescriptionUpdatedData,
-          } as IndexBlockData ;
-
-          continue;
-        } else if (eventType === EventName.Transfer) {
+        //Transfer event check
+        if (FieldElement.toHex(TRANSFER_KEY) === FieldElement.toHex(eventKey)) {
+          // ignore if transferred from or to NFT contract or a null address
+          //  null address and contract addresses
+          const irrevelantAddresses = [
+            FieldElement.toHex(CONTRACT_ADDRESS),
+            '0x0',
+          ];
+          const irrevelantTransfer =
+            irrevelantAddresses.includes(FieldElement.toHex(event.data[0])) ||
+            irrevelantAddresses.includes(FieldElement.toHex(event.data[1]));
+          if (irrevelantTransfer) {
+            continue;
+          }
+          console.log('transfer event');
           eventsArr.push({
-            eventType,
+            eventType: EventName.Transfer,
             data: {
-              ...decodeTransfer(eventData),
+              ...decodeTransfer(event.data),
               ...commonData,
             } as TransferData,
           });
-
           continue;
+        }
+        //Prescription updated event check
+        else if (
+          FieldElement.toHex(PRESCRIPTION_UPDATED_KEY) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('prescription updated event');
+          eventsArr.push({
+            eventType: EventName.Prescription_Updated,
+            data: {
+              ...decodePrescriptionUpdated(event.data),
+              ...commonData,
+            } as PrescriptionUpdatedData,
+          } as IndexBlockData);
+          continue;
+        }
+
+        //Unknown event
+        else {
+          console.log('unknown event');
         }
       }
     }
     if (lastPrescriptionUpdatedEvent) {
       eventsArr.push(lastPrescriptionUpdatedEvent);
-  }
-
+    }
     return eventsArr;
-  }
-
-  handleInvalidate(invalidate: proto.Invalidate__Output) {
-    console.log(`[invalidate] sequence=${invalidate.sequence}`);
-    this.currentSequence = invalidate.sequence;
-  }
-
-  // Unused as we destroy the stream and create a new one
-  onRetry(retryCount: number) {
-    // retry connecting up to 3 times, with a delay of 1 seconds in between
-    // retries.
-    // Start from the sequence number _following_ the last received message.
-    const retry = retryCount < 3;
-    const startingSequence = this.currentSequence
-      ? +this.currentSequence + 1
-      : undefined;
-
-    console.log(
-      `[retry] retry=${
-        retry ? 'yes' : 'no'
-      }, startingSequence=${startingSequence}`,
-    );
-
-    return { retry, delay: 1, startingSequence };
   }
 }

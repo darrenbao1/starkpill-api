@@ -1,19 +1,20 @@
 import { Abi, Contract, hash, Provider, number, uint256 } from 'starknet';
-
+import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
 export enum EventName {
   Prescription_Updated = 'PrescriptionUpdated',
   Transfer = 'Transfer',
 }
 
-export const PRESCRIPTION_UPDATED_KEY =
-  '0x' +
-  hash.getSelectorFromName('PrescriptionUpdated').slice(2).padStart(64, '0');
+export const TRANSFER_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('Transfer'),
+);
+export const PRESCRIPTION_UPDATED_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('PrescriptionUpdated'),
+);
 
-export const TRANSFER_KEY =
-  '0x' + hash.getSelectorFromName('Transfer').slice(2).padStart(64, '0');
-
-export const CONTRACT_ADDRESS =
-  '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd';
+export const CONTRACT_ADDRESS = FieldElement.fromBigInt(
+  '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd',
+);
 
 export const NULL_FELT =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -29,16 +30,26 @@ export const uint8ToString = (uint8Arr: Uint8Array) => {
   return result;
 };
 
-export const decodePrescriptionUpdated = (eventData: string[]) => {
-  const data = eventData.map((d) => parseInt(d, 16));
-  const owner = eventData[0];
-  const [, tokenId, , mintPrice, , oldIng, , oldBG, , newIng, , newBG] = data;
-
-  return { owner, tokenId, mintPrice, oldIng, oldBG, newIng, newBG };
+export const decodePrescriptionUpdated = (
+  eventData: starknet.IFieldElement[],
+) => {
+  const dataArray = eventData.map((d) => FieldElement.toHex(d));
+  const [owner, tokenId, , mintPrice, , oldIng, , oldBG, , newIng, , newBG] =
+    dataArray;
+  return {
+    owner,
+    tokenId: parseInt(tokenId, 16),
+    mintPrice: parseInt(mintPrice, 16),
+    oldIng: parseInt(oldIng, 16),
+    oldBG: parseInt(oldBG, 16),
+    newIng: parseInt(newIng, 16),
+    newBG: parseInt(newBG, 16),
+  };
 };
 
-export const decodeTransfer = (eventData: string[]) => {
-  const [from, to, tokenId] = eventData;
+export const decodeTransfer = (eventData: starknet.IFieldElement[]) => {
+  const dataArray = eventData.map((d) => FieldElement.toHex(d));
+  const [from, to, tokenId] = dataArray;
   return {
     from,
     to,
@@ -75,7 +86,11 @@ interface TokenMetadata {
 
 export const getMetadataFromContract = async (id: number) => {
   const provider = new Provider({ sequencer: { network: 'goerli-alpha' } });
-  const contract = new Contract(testpillAbi as Abi, CONTRACT_ADDRESS, provider);
+  const contract = new Contract(
+    testpillAbi as Abi,
+    FieldElement.toHex(CONTRACT_ADDRESS),
+    provider,
+  );
 
   const contractUriRaw = await contract.call('tokenURI', [
     uint256.bnToUint256(number.toBN(id)),
