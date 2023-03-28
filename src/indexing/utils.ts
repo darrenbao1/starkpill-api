@@ -37,7 +37,7 @@ export const decodePrescriptionUpdated = (
   const [owner, tokenId, , mintPrice, , oldIng, , oldBG, , newIng, , newBG] =
     dataArray;
   return {
-    owner,
+    owner: convertToStandardWalletAddress(owner),
     tokenId: parseInt(tokenId, 16),
     mintPrice: parseInt(mintPrice, 16),
     oldIng: parseInt(oldIng, 16),
@@ -51,8 +51,8 @@ export const decodeTransfer = (eventData: starknet.IFieldElement[]) => {
   const dataArray = eventData.map((d) => FieldElement.toHex(d));
   const [from, to, tokenId] = dataArray;
   return {
-    from,
-    to,
+    from: convertToStandardWalletAddress(from),
+    to: convertToStandardWalletAddress(to),
     tokenId: parseInt(tokenId, 16),
   };
 };
@@ -139,3 +139,7 @@ export interface TransferData extends TrxnData {
 export type IndexBlockData =
   | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
   | { data: TransferData; eventType: EventName.Transfer };
+
+export function convertToStandardWalletAddress(walletAddress: string) {
+  return '0x' + walletAddress.substring(2).padStart(64, '0');
+}
