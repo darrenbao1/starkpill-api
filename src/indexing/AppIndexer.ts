@@ -74,13 +74,13 @@ export class AppIndexer {
           FieldElement.toHex(eventKey)
         ) {
           console.log('prescription updated event');
-          eventsArr.push({
+          lastPrescriptionUpdatedEvent = {
             eventType: EventName.Prescription_Updated,
             data: {
               ...decodePrescriptionUpdated(event.data),
               ...commonData,
             } as PrescriptionUpdatedData,
-          } as IndexBlockData);
+          } as IndexBlockData;
           continue;
         }
 
