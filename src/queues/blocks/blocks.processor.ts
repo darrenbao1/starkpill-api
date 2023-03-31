@@ -24,6 +24,10 @@ export class BlocksProcessor {
       await this.blocksService.handlePrescriptionUpdated(data);
     } else if (eventType === EventName.Transfer) {
       await this.blocksService.handleTransfer(data);
+    } else if (eventType === EventName.SCALAR_TRANSFER) {
+      await this.blocksService.handleScalarTransfer(data);
+    } else if (eventType === EventName.SCALAR_REMOVE) {
+      await this.blocksService.handleScalarRemove(data);
     }
   }
 

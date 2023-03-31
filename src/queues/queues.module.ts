@@ -6,18 +6,20 @@ import { Queue } from 'bull';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import expressBasicAuth from 'express-basic-auth';
 import { ConfigService } from '@nestjs/config';
-import { BLOCKS_QUEUE, METADATA_QUEUE } from './constants';
+import { BACKPACK_QUEUE, BLOCKS_QUEUE, METADATA_QUEUE } from './constants';
 import { BlocksModule } from './blocks/blocks.module';
 import { MetadataModule } from './metadata/metadata.module';
+import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.module';
 
 @Module({
-  imports: [BlocksModule, MetadataModule],
-  exports: [BlocksModule, MetadataModule], // TODO: remove this export
+  imports: [BlocksModule, MetadataModule, BackpackMetadataModule],
+  exports: [BlocksModule, MetadataModule, BackpackMetadataModule], // TODO: remove this export
 })
 export class QueuesModule {
   constructor(
     @InjectQueue(BLOCKS_QUEUE) private readonly blocksQueue: Queue,
     @InjectQueue(METADATA_QUEUE) private readonly metadataQueue: Queue,
+    @InjectQueue(BACKPACK_QUEUE) private readonly backpackQueue: Queue,
     private readonly configService: ConfigService,
   ) {}
 
@@ -32,6 +34,7 @@ export class QueuesModule {
       queues: [
         new BullAdapter(this.blocksQueue),
         new BullAdapter(this.metadataQueue),
+        new BullAdapter(this.backpackQueue),
       ],
       serverAdapter,
     });

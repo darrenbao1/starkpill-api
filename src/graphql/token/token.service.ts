@@ -82,9 +82,9 @@ export class TokenService {
   //       event: true,
   //     },
   //     orderBy: [{
-  //       mintPrice: 'desc'  
+  //       mintPrice: 'desc'
   //     },{
-  //       event: 
+  //       event:
   //       {tokenId: "asc"}
   //     }]
   //   });
@@ -96,11 +96,14 @@ export class TokenService {
     const tokenIds = await this.prismaService.tokenMetadata.findMany({
       take: paginationArgs.first,
       skip: paginationArgs.skip,
-      orderBy: [{
-        mintPrice: 'desc'
-      },{
-        id: "asc"
-      }]
+      orderBy: [
+        {
+          mintPrice: 'desc',
+        },
+        {
+          id: 'asc',
+        },
+      ],
     });
     return this.findTokensById(tokenIds.map((token) => token.id));
   }
@@ -114,5 +117,25 @@ export class TokenService {
       ...metadata,
       mintPrice: metadata.mintPrice.toString(),
     };
+  }
+  //back pack functions
+  async findBackPackTokensById(tokenIds: number[]) {
+    const backpackTokens = await this.prismaService.backpackMetadata.findMany({
+      where: {
+        id: {
+          in: tokenIds,
+        },
+      },
+    });
+    
+    return backpackTokens;
+  }
+  async findBackPackTokens(address: string) {
+    const backpackTokensIds = await this.prismaService.backpack.findMany({
+      where: { ownerAddress: address },
+    });
+    return this.findBackPackTokensById(
+      backpackTokensIds.map((token) => token.id),
+    );
   }
 }

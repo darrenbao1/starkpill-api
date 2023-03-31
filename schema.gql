@@ -69,11 +69,20 @@ type Token {
   metadata: Metadata!
 }
 
+type BackPackMetadata {
+  id: Int!
+  description: String!
+  imageUrl: String!
+  isIngredient: Boolean!
+  itemName: String!
+}
+
 type Query {
   query: String!
   token(tokenId: Int!): Token!
   tokens(tokenIds: [Int!]!): [Token!]!
   allTokens(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
+  ownerBackpack(ownerAddress: String!): [BackPackMetadata!]!
   transaction(transactionHash: String!): Transaction!
   transactions(transactionHashes: [String!]!): [Transaction!]!
   allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!

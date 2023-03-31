@@ -10,6 +10,7 @@ import { Metadata } from '../metadata/model/metadata.model';
 import { PaginationArgs } from '../shared/pagination.args';
 import { Token } from './model/token.model';
 import { TokenService } from './token.service';
+import { BackPackMetadata } from '../backpackMetadata/model/backpackMetadata.model';
 
 @Resolver(() => Token)
 export class TokenResolver {
@@ -34,5 +35,12 @@ export class TokenResolver {
   @ResolveField(() => Metadata)
   async metadata(@Parent() token: Token) {
     return this.tokenService.findMetadataByTokenId(token.id);
+  }
+
+  @Query(() => [BackPackMetadata])
+  async ownerBackpack(
+    @Args('ownerAddress', { type: () => String }) ownerAddress: string,
+  ) {
+    return this.tokenService.findBackPackTokens(ownerAddress);
   }
 }

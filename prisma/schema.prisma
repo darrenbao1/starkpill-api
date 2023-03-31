@@ -70,3 +70,17 @@ model Transfer {
   event           Event  @relation(fields: [transactionHash], references: [transactionHash])
   from            String
 }
+
+
+
+model BackpackMetadata {
+    id          Int     @id
+    description String
+    imageUrl    String
+    isIngredient Boolean
+    itemName String
+}
+model Backpack {
+    id          Int     @id
+    ownerAddress String 
+}

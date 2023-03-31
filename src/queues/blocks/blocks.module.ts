@@ -16,16 +16,19 @@ import {
   INTERVAL_STREAM_CHECK,
   PRESCRIPTION_UPDATED_KEY,
   RESTART_STREAM_AFTER,
+  SCALAR_REMOVE_KEY,
+  SCALAR_TRANSFER_KEY,
   TRANSFER_KEY,
 } from 'src/indexing/utils';
 import { MetadataModule } from '../metadata/metadata.module';
-
+import { BackpackMetadataModule } from '../backpackMetadata/backpackMetadata.module';
 @Module({
   imports: [
     BullModule.registerQueue({
       name: BLOCKS_QUEUE,
     }),
     MetadataModule,
+    BackpackMetadataModule,
   ],
   providers: [BlocksService, BlocksProcessor],
   exports: [BlocksService, BullModule],
@@ -61,6 +64,14 @@ export class BlocksModule {
         ev
           .withFromAddress(CONTRACT_ADDRESS)
           .withKeys([PRESCRIPTION_UPDATED_KEY]),
+      )
+      //adding scalar transfer event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([SCALAR_TRANSFER_KEY]),
+      )
+      //adding scalar remove event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([SCALAR_REMOVE_KEY]),
       )
       .encode();
     this.client.configure({

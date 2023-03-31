@@ -17,6 +17,12 @@ import {
   decodePrescriptionUpdated,
   PrescriptionUpdatedData,
   EventName,
+  SCALAR_TRANSFER_KEY,
+  SCALAR_REMOVE_KEY,
+  decodeScalarRemove,
+  ScalarRemoveData,
+  decodeScalarTransfer,
+  ScalarTransferData,
 } from './utils';
 
 /**
@@ -83,7 +89,35 @@ export class AppIndexer {
           } as IndexBlockData;
           continue;
         }
-
+        //Scalar transfer event check
+        else if (
+          FieldElement.toHex(SCALAR_TRANSFER_KEY) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('scalar transfer event');
+          eventsArr.push({
+            eventType: EventName.SCALAR_TRANSFER,
+            data: {
+              ...decodeScalarTransfer(event.data),
+              ...commonData,
+            } as ScalarTransferData,
+          });
+          continue;
+        }
+        //Scalar remove event check
+        else if (
+          FieldElement.toHex(SCALAR_REMOVE_KEY) === FieldElement.toHex(eventKey)
+        ) {
+          console.log('scalar remove event');
+          eventsArr.push({
+            eventType: EventName.SCALAR_REMOVE,
+            data: {
+              ...decodeScalarRemove(event.data),
+              ...commonData,
+            } as ScalarRemoveData,
+          });
+          continue;
+        }
         //Unknown event
         else {
           console.log('unknown event');
