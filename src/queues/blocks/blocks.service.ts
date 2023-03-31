@@ -12,17 +12,20 @@ import {
   TransferData,
   IndexBlockData,
   PrescriptionUpdatedData,
+  ScalarRemoveData,
+  ScalarTransferData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
 import { MetadataService } from '../metadata/metadata.service';
-
+import { BackpackMetadataService } from '../backpackMetadata/backpackMetadata.service';
 @Injectable()
 export class BlocksService {
   constructor(
     @InjectQueue(BLOCKS_QUEUE) private readonly blocksQueue: Queue,
     private readonly metadataService: MetadataService,
     private readonly prismaService: PrismaService,
+    private readonly backpackMetadataService: BackpackMetadataService,
   ) {}
 
   async handlePrescriptionUpdated({
@@ -142,6 +145,37 @@ export class BlocksService {
 
     console.log('transfer');
     console.log(result);
+  }
+  async handleScalarRemove({ tokenId, to, ...eventData }: ScalarRemoveData) {
+    if (
+      await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
+    ) {
+      console.log('this Scalar Remove transaction has already been indexed');
+      return;
+    }
+    const result = await this.prismaService.backpack.create({
+      data: {
+        id: tokenId,
+        ownerAddress: to,
+      },
+    });
+    console.log('Scalar Remove');
+    console.log(result);
+    this.backpackMetadataService.queueIndexMetadata(tokenId);
+  }
+  async handleScalarTransfer({ tokenId, ...eventData }: ScalarTransferData) {
+    if (
+      await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
+    ) {
+      console.log('deleting this item from db as it has been transferred');
+      const result = await this.prismaService.backpack.delete({
+        where: { id: tokenId },
+      });
+      console.log(result);
+      return;
+    } else {
+      console.log('irrelevant ScalarTransfer');
+    }
   }
 
   async queueIndexBlockData(blockData: IndexBlockData) {

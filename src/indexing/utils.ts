@@ -3,15 +3,21 @@ import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
 export enum EventName {
   Prescription_Updated = 'PrescriptionUpdated',
   Transfer = 'Transfer',
+  SCALAR_TRANSFER = 'ScalarTransfer',
+  SCALAR_REMOVE = 'ScalarRemove',
 }
-
 export const TRANSFER_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('Transfer'),
 );
 export const PRESCRIPTION_UPDATED_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('PrescriptionUpdated'),
 );
-
+export const SCALAR_TRANSFER_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('ScalarTransfer'),
+);
+export const SCALAR_REMOVE_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('ScalarRemove'),
+);
 export const CONTRACT_ADDRESS = FieldElement.fromBigInt(
   '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd',
 );
@@ -56,6 +62,22 @@ export const decodeTransfer = (eventData: starknet.IFieldElement[]) => {
     tokenId: parseInt(tokenId, 16),
   };
 };
+export const decodeScalarTransfer = (eventData: starknet.IFieldElement[]) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  return {
+    tokenId: Number(tokenId.toString()),
+  };
+};
+export const decodeScalarRemove = (eventData: starknet.IFieldElement[]) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[2]) + FieldElement.toBigInt(eventData[3]);
+  const to = FieldElement.toHex(eventData[4]);
+  return {
+    tokenId: Number(tokenId.toString()),
+    to: convertToStandardWalletAddress(to.toString()),
+  };
+};
 
 export const hex2a = (hexx: string) => {
   const hex = hexx.toString(); //force conversion
@@ -72,6 +94,7 @@ export const hex2a = (hexx: string) => {
 };
 
 import testpillAbi from 'src/abi/testpill.json';
+import { type } from 'os';
 
 interface TokenMetadata {
   name: string;
@@ -81,6 +104,17 @@ interface TokenMetadata {
     { trait_type: 'Medical Bill'; value: number },
     { trait_type: 'Ingredient'; value: string },
     { trait_type: 'Background'; value: string },
+  ];
+}
+interface BackpackMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes: [
+    {
+      trait_type: string;
+      value: string;
+    },
   ];
 }
 
@@ -115,6 +149,38 @@ export const getMetadataFromContract = async (id: number) => {
   return { id, description, imageUrl, mintPrice, ingredient, background };
 };
 
+export const getBackpackFromContract = async (id: number) => {
+  const provider = new Provider({ sequencer: { network: 'goerli-alpha' } });
+  const contract = new Contract(
+    testpillAbi as Abi,
+    FieldElement.toHex(CONTRACT_ADDRESS),
+    provider,
+  );
+
+  const contractUriRaw = await contract.call('tokenURI', [
+    uint256.bnToUint256(number.toBN(id)),
+  ]);
+
+  const resultArray = contractUriRaw.map((data) =>
+    number.bigNumberishArrayToHexadecimalStringArray(data),
+  );
+
+  const jsonMetadata: BackpackMetadata = JSON.parse(
+    resultArray[0].map((json) => hex2a(json)).join(''),
+  );
+
+  const description = jsonMetadata.description;
+  const imageUrl = jsonMetadata.image;
+  const atributes = jsonMetadata.attributes;
+  // !: If '' is returned for ingredient or background, it means there's no value
+  let isIngredient = false;
+  if (atributes[0].trait_type === 'Ingredient') {
+    isIngredient = true;
+  }
+  const itemName = atributes[0].value;
+  return { id, description, imageUrl, isIngredient, itemName };
+};
+
 interface TrxnData {
   tokenId: number;
   timestamp: Date;
@@ -136,9 +202,18 @@ export interface TransferData extends TrxnData {
   to: string;
 }
 
+export interface ScalarTransferData extends TrxnData {
+  tokenId: number;
+}
+export interface ScalarRemoveData extends TrxnData {
+  tokenId: number;
+  to: string;
+}
 export type IndexBlockData =
   | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
-  | { data: TransferData; eventType: EventName.Transfer };
+  | { data: TransferData; eventType: EventName.Transfer }
+  | { data: ScalarTransferData; eventType: EventName.SCALAR_TRANSFER }
+  | { data: ScalarRemoveData; eventType: EventName.SCALAR_REMOVE };
 
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');
