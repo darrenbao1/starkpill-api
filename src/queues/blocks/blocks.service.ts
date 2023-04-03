@@ -14,6 +14,8 @@ import {
   PrescriptionUpdatedData,
   ScalarRemoveData,
   ScalarTransferData,
+  PillFameData,
+  PharmacyStockData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
@@ -118,6 +120,47 @@ export class BlocksService {
     console.log('changing tokenId', tokenId);
     // Update the token metadata table, don't need to await as it's a side effect
     this.metadataService.queueIndexMetadata(tokenId);
+  }
+  async handleFameOrDefame({ tokenId, ...eventData }: PillFameData) {
+    console.log("Fame or defame event detected, updating token's metadata");
+    this.metadataService.queueIndexMetadata(tokenId);
+  }
+
+  async handlePharmacyStockUpdated({
+    typeIndex,
+    index,
+    startAmount,
+    ammount_left,
+    ...eventData
+  }: PharmacyStockData) {
+    console.log('Pharmacy stock updated');
+
+    // Check if the stock already exists
+    const existingStock = await this.prismaService.pharmacyData.findFirst({
+      where: { typeIndex, index },
+    });
+
+    if (existingStock) {
+      // If the stock exists, update the `amount_left` field
+      const updatedStock = await this.prismaService.pharmacyData.update({
+        where: { typeIndex_index: { typeIndex, index } },
+        data: { startAmount, amount_left: ammount_left },
+      });
+
+      console.log('Stock updated:', updatedStock);
+    } else {
+      // If the stock does not exist, create a new record
+      const newStock = await this.prismaService.pharmacyData.create({
+        data: {
+          typeIndex,
+          index,
+          startAmount,
+          amount_left: ammount_left,
+        },
+      });
+
+      console.log('New stock created:', newStock);
+    }
   }
 
   async handleTransfer({ from, ...eventData }: TransferData) {

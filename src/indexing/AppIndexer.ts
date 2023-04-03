@@ -23,6 +23,11 @@ import {
   ScalarRemoveData,
   decodeScalarTransfer,
   ScalarTransferData,
+  PILL_FAME_UPDATED_KEY,
+  decodeFameOrDefameUpdated,
+  PILL_DEFAME_UPDATED_KEY,
+  PHARMARCY_STOCK_UPDATE,
+  decodePharmacyStockUpdate,
 } from './utils';
 
 /**
@@ -117,6 +122,49 @@ export class AppIndexer {
             } as ScalarRemoveData,
           });
           continue;
+        }
+        //Pill Fame Updated event check
+        else if (
+          FieldElement.toHex(PILL_FAME_UPDATED_KEY) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('pill fame updated event');
+          eventsArr.push({
+            eventType: EventName.PILL_FAME_UPDATED,
+            data: {
+              ...decodeFameOrDefameUpdated(event.data),
+              ...commonData,
+            },
+          });
+        }
+        //Pill defame updated event check
+        else if (
+          FieldElement.toHex(PILL_DEFAME_UPDATED_KEY) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('pill defame updated event');
+          eventsArr.push({
+            eventType: EventName.PILL_DEFAME_UPDATED,
+            data: {
+              ...decodeFameOrDefameUpdated(event.data),
+              ...commonData,
+            },
+          });
+        }
+        //Pharmacy updated event check
+        else if (
+          FieldElement.toHex(PHARMARCY_STOCK_UPDATE) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('Pharmacy stock updated event');
+          eventsArr.push({
+            eventType: EventName.PHARMACY_STOCK_UPDATED,
+            data: {
+              tokenId: 0, //does not have token id as it's the pharmacy stock.
+              ...decodePharmacyStockUpdate(event.data),
+              ...commonData,
+            },
+          });
         }
         //Unknown event
         else {

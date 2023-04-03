@@ -28,6 +28,12 @@ export class BlocksProcessor {
       await this.blocksService.handleScalarTransfer(data);
     } else if (eventType === EventName.SCALAR_REMOVE) {
       await this.blocksService.handleScalarRemove(data);
+    } else if (eventType === EventName.PILL_FAME_UPDATED) {
+      await this.blocksService.handleFameOrDefame(data);
+    } else if (eventType === EventName.PILL_DEFAME_UPDATED) {
+      await this.blocksService.handleFameOrDefame(data);
+    } else if (eventType === EventName.PHARMACY_STOCK_UPDATED) {
+      await this.blocksService.handlePharmacyStockUpdated(data);
     }
   }
 

@@ -30,6 +30,8 @@ model TokenMetadata {
   ingredient  String
   background  String
   mintPrice   Decimal @db.Decimal(50, 0)
+  fame        Int
+  defame      Int
 }
 
 model Event {
@@ -83,4 +85,12 @@ model BackpackMetadata {
 model Backpack {
     id          Int     @id
     ownerAddress String 
+}
+
+model PharmacyData {
+  typeIndex          Int     
+  index              Int   
+  startAmount        Int
+  amount_left       Int
+  @@id([typeIndex, index], name: "typeIndex_index")
 }

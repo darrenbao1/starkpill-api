@@ -8,6 +8,8 @@ type Metadata {
   ingredient: String!
   background: String!
   mintPrice: String!
+  fame: Float!
+  defame: Float!
 }
 
 type ChangeAttribute {
@@ -77,6 +79,13 @@ type BackPackMetadata {
   itemName: String!
 }
 
+type PharmacyData {
+  typeIndex: Float!
+  index: Float!
+  startAmount: Float!
+  amount_left: Float!
+}
+
 type Query {
   query: String!
   token(tokenId: Int!): Token!
@@ -88,6 +97,7 @@ type Query {
   allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!
   user(address: String!): User!
   lastIndexedBlock: Int!
+  getPharmacyData: [PharmacyData!]!
 }
 
 """
