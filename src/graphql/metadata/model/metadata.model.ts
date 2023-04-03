@@ -16,4 +16,10 @@ export class Metadata {
 
   @Field(() => String)
   mintPrice: string;
+
+  @Field(() => Number)
+  fame: number;
+
+  @Field(() => Number)
+  defame: number;
 }

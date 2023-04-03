@@ -14,6 +14,9 @@ import { AppIndexer } from 'src/indexing/AppIndexer';
 import {
   CONTRACT_ADDRESS,
   INTERVAL_STREAM_CHECK,
+  PHARMARCY_STOCK_UPDATE,
+  PILL_DEFAME_UPDATED_KEY,
+  PILL_FAME_UPDATED_KEY,
   PRESCRIPTION_UPDATED_KEY,
   RESTART_STREAM_AFTER,
   SCALAR_REMOVE_KEY,
@@ -22,6 +25,7 @@ import {
 } from 'src/indexing/utils';
 import { MetadataModule } from '../metadata/metadata.module';
 import { BackpackMetadataModule } from '../backpackMetadata/backpackMetadata.module';
+import { ConfigService } from '@nestjs/config';
 @Module({
   imports: [
     BullModule.registerQueue({
@@ -34,7 +38,10 @@ import { BackpackMetadataModule } from '../backpackMetadata/backpackMetadata.mod
   exports: [BlocksService, BullModule],
 })
 export class BlocksModule {
-  constructor(private readonly blocksService: BlocksService) {}
+  constructor(
+    private readonly blocksService: BlocksService,
+    private readonly configService: ConfigService,
+  ) {}
 
   private indexer: AppIndexer;
   private filter: Uint8Array;
@@ -51,7 +58,7 @@ export class BlocksModule {
     this.client = new StreamClient({
       url: 'goerli.starknet.a5a.ch',
       credentials: ChannelCredentials.createSsl(),
-      token: 'dna_T592xChWn3oqO0p9aBq2',
+      token: this.configService.get('AUTH_TOKEN'),
     });
     this.filter = Filter.create()
       .withHeader()
@@ -72,6 +79,20 @@ export class BlocksModule {
       //adding scalar remove event
       .addEvent((ev) =>
         ev.withFromAddress(CONTRACT_ADDRESS).withKeys([SCALAR_REMOVE_KEY]),
+      )
+      //adding pill fame updated event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([PILL_FAME_UPDATED_KEY]),
+      )
+      //adding pill defame updated event
+      .addEvent((ev) =>
+        ev
+          .withFromAddress(CONTRACT_ADDRESS)
+          .withKeys([PILL_DEFAME_UPDATED_KEY]),
+      )
+      //adding pharmacy stock update event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([PHARMARCY_STOCK_UPDATE]),
       )
       .encode();
     this.client.configure({

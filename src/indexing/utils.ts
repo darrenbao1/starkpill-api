@@ -5,6 +5,9 @@ export enum EventName {
   Transfer = 'Transfer',
   SCALAR_TRANSFER = 'ScalarTransfer',
   SCALAR_REMOVE = 'ScalarRemove',
+  PILL_FAME_UPDATED = 'PillFameUpdated',
+  PILL_DEFAME_UPDATED = 'PillDefameUpdated',
+  PHARMACY_STOCK_UPDATED = 'PharmacyStockUpdate',
 }
 export const TRANSFER_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('Transfer'),
@@ -17,6 +20,15 @@ export const SCALAR_TRANSFER_KEY = FieldElement.fromBigInt(
 );
 export const SCALAR_REMOVE_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('ScalarRemove'),
+);
+export const PILL_FAME_UPDATED_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('PillFameUpdated'),
+);
+export const PILL_DEFAME_UPDATED_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('PillDeFameUpdated'),
+);
+export const PHARMARCY_STOCK_UPDATE = FieldElement.fromBigInt(
+  hash.getSelectorFromName('PharmacyStockUpdate'),
 );
 export const CONTRACT_ADDRESS = FieldElement.fromBigInt(
   '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd',
@@ -78,6 +90,27 @@ export const decodeScalarRemove = (eventData: starknet.IFieldElement[]) => {
     to: convertToStandardWalletAddress(to.toString()),
   };
 };
+export const decodeFameOrDefameUpdated = (
+  eventData: starknet.IFieldElement[],
+) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  return {
+    tokenId: Number(tokenId.toString()),
+  };
+};
+export const decodePharmacyStockUpdate = (
+  eventData: starknet.IFieldElement[],
+) => {
+  const dataArray = eventData.map((d) => FieldElement.toHex(d));
+  const [typeIndex, index, startAmount, ammount_left] = dataArray;
+  return {
+    typeIndex: parseInt(typeIndex, 16),
+    index: parseInt(index, 16),
+    startAmount: parseInt(startAmount, 16),
+    ammount_left: parseInt(ammount_left, 16),
+  };
+};
 
 export const hex2a = (hexx: string) => {
   const hex = hexx.toString(); //force conversion
@@ -104,6 +137,8 @@ interface TokenMetadata {
     { trait_type: 'Medical Bill'; value: number },
     { trait_type: 'Ingredient'; value: string },
     { trait_type: 'Background'; value: string },
+    { trait_type: 'Fame'; value: number },
+    { trait_type: 'DeFame'; value: number },
   ];
 }
 interface BackpackMetadata {
@@ -145,8 +180,18 @@ export const getMetadataFromContract = async (id: number) => {
   const mintPrice = atributes[0]?.value ?? 0;
   const ingredient = atributes[1]?.value ?? '';
   const background = atributes[2]?.value ?? '';
-
-  return { id, description, imageUrl, mintPrice, ingredient, background };
+  const fame = atributes[3]?.value ?? 0;
+  const defame = atributes[4]?.value ?? 0;
+  return {
+    id,
+    description,
+    imageUrl,
+    mintPrice,
+    ingredient,
+    background,
+    fame,
+    defame,
+  };
 };
 
 export const getBackpackFromContract = async (id: number) => {
@@ -209,11 +254,23 @@ export interface ScalarRemoveData extends TrxnData {
   tokenId: number;
   to: string;
 }
+export interface PillFameData extends TrxnData {
+  tokenId: number;
+}
+export interface PharmacyStockData extends TrxnData {
+  typeIndex: number;
+  index: number;
+  startAmount: number;
+  ammount_left: number;
+}
 export type IndexBlockData =
   | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
   | { data: TransferData; eventType: EventName.Transfer }
   | { data: ScalarTransferData; eventType: EventName.SCALAR_TRANSFER }
-  | { data: ScalarRemoveData; eventType: EventName.SCALAR_REMOVE };
+  | { data: ScalarRemoveData; eventType: EventName.SCALAR_REMOVE }
+  | { data: PillFameData; eventType: EventName.PILL_FAME_UPDATED }
+  | { data: PillFameData; eventType: EventName.PILL_DEFAME_UPDATED }
+  | { data: PharmacyStockData; eventType: EventName.PHARMACY_STOCK_UPDATED };
 
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');

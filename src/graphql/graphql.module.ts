@@ -7,6 +7,7 @@ import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
 import { MetadataModule } from './metadata/metadata.module';
+import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MetadataModule } from './metadata/metadata.module';
     TransactionModule,
     UserModule,
     MetadataModule,
+    PharmacyDataModule,
   ],
   providers: [],
 })

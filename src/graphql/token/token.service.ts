@@ -118,6 +118,9 @@ export class TokenService {
       mintPrice: metadata.mintPrice.toString(),
     };
   }
+
+
+
   //back pack functions
   async findBackPackTokensById(tokenIds: number[]) {
     const backpackTokens = await this.prismaService.backpackMetadata.findMany({
