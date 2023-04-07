@@ -43,4 +43,13 @@ export class UserResolver {
   transactions(@Parent() user: User) {
     return this.userService.findTransactionsByUser(user.address);
   }
+
+  @ResolveField(() => Int)
+  async getVotingPower(@Parent() user: User) {
+    const tokensIdsOwned = await this.userService.findTokenIdsOwnedByUser(
+      user.address,
+    );
+    const votingPower = await this.tokenService.getVotingPower(tokensIdsOwned);
+    return votingPower;
+  }
 }

@@ -31,7 +31,16 @@ export class TokenResolver {
   async allTokens(@Args() paginationArgs: PaginationArgs) {
     return this.tokenService.findAllTokens(paginationArgs);
   }
-
+  // order by highest fame
+  @Query(() => [Token])
+  async allTokensByHighestFame(@Args() paginationArgs: PaginationArgs) {
+    return this.tokenService.findAllTokensByHighestFame(paginationArgs);
+  }
+  // order by latest pill
+  @Query(() => [Token])
+  async allTokensByLatest(@Args() paginationArgs: PaginationArgs) {
+    return this.tokenService.findAllTokensByLatest(paginationArgs);
+  }
   @ResolveField(() => Metadata)
   async metadata(@Parent() token: Token) {
     return this.tokenService.findMetadataByTokenId(token.id);
@@ -43,4 +52,5 @@ export class TokenResolver {
   ) {
     return this.tokenService.findBackPackTokens(ownerAddress);
   }
+
 }

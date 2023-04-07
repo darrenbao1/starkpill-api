@@ -28,6 +28,8 @@ import {
   PILL_DEFAME_UPDATED_KEY,
   PHARMARCY_STOCK_UPDATE,
   decodePharmacyStockUpdate,
+  PILL_VOTE_TIMESTAMP,
+  decodePillVoteTimeStamp,
 } from './utils';
 
 /**
@@ -166,6 +168,23 @@ export class AppIndexer {
             },
           });
         }
+        //PillVoteTimeStamp event check
+        else if (
+          FieldElement.toHex(PILL_VOTE_TIMESTAMP) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('PillVoteTimeStamp event');
+          console.log(decodePillVoteTimeStamp(event.data));
+          eventsArr.push({
+            eventType: EventName.PILL_VOTE_TIMESTAMP,
+            data: {
+              ...decodePillVoteTimeStamp(event.data),
+              ...commonData,
+            },
+            //TODO
+          });
+        }
+
         //Unknown event
         else {
           console.log('unknown event');

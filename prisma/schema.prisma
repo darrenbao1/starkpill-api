@@ -31,7 +31,6 @@ model TokenMetadata {
   background  String
   mintPrice   Decimal @db.Decimal(50, 0)
   fame        Int
-  defame      Int
 }
 
 model Event {
@@ -93,4 +92,9 @@ model PharmacyData {
   startAmount        Int
   amount_left       Int
   @@id([typeIndex, index], name: "typeIndex_index")
+}
+
+model VotingBooth {
+  tokenId Int @id
+  time_Stamp DateTime
 }

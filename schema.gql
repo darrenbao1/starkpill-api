@@ -9,7 +9,6 @@ type Metadata {
   background: String!
   mintPrice: String!
   fame: Float!
-  defame: Float!
 }
 
 type ChangeAttribute {
@@ -60,6 +59,7 @@ type User {
   tokens: [Token!]!
   numberOfTokensOwned: Int!
   transactions: [Transaction!]!
+  getVotingPower: Int!
 }
 
 type Token {
@@ -91,6 +91,8 @@ type Query {
   token(tokenId: Int!): Token!
   tokens(tokenIds: [Int!]!): [Token!]!
   allTokens(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
+  allTokensByHighestFame(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
+  allTokensByLatest(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
   ownerBackpack(ownerAddress: String!): [BackPackMetadata!]!
   transaction(transactionHash: String!): Transaction!
   transactions(transactionHashes: [String!]!): [Transaction!]!

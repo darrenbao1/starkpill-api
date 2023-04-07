@@ -17,11 +17,13 @@ import {
   PHARMARCY_STOCK_UPDATE,
   PILL_DEFAME_UPDATED_KEY,
   PILL_FAME_UPDATED_KEY,
+  PILL_VOTE_TIMESTAMP,
   PRESCRIPTION_UPDATED_KEY,
   RESTART_STREAM_AFTER,
   SCALAR_REMOVE_KEY,
   SCALAR_TRANSFER_KEY,
   TRANSFER_KEY,
+  VOTING_CONTRACT_ADDRESS,
 } from 'src/indexing/utils';
 import { MetadataModule } from '../metadata/metadata.module';
 import { BackpackMetadataModule } from '../backpackMetadata/backpackMetadata.module';
@@ -93,6 +95,12 @@ export class BlocksModule {
       //adding pharmacy stock update event
       .addEvent((ev) =>
         ev.withFromAddress(CONTRACT_ADDRESS).withKeys([PHARMARCY_STOCK_UPDATE]),
+      )
+      //adding PillVoteTimeStamp event
+      .addEvent((ev) =>
+        ev
+          .withFromAddress(VOTING_CONTRACT_ADDRESS)
+          .withKeys([PILL_VOTE_TIMESTAMP]),
       )
       .encode();
     this.client.configure({

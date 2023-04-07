@@ -16,6 +16,7 @@ import {
   ScalarTransferData,
   PillFameData,
   PharmacyStockData,
+  PillVoteTimeStampData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
@@ -218,6 +219,42 @@ export class BlocksService {
       return;
     } else {
       console.log('irrelevant ScalarTransfer');
+    }
+  }
+
+  async handlePillVoteTimestamp({
+    tokenId,
+    time_stamp,
+  }: PillVoteTimeStampData) {
+    console.log('Pill vote event detected, updating token metadata');
+    //TODO
+    //Convert time_stamp from unix time to date
+    const time_stampInDate = new Date(time_stamp * 1000);
+
+    //check if tokenId exists in VotingBooth
+    //if it does, update the time_stamp
+    //if it doesn't, create a new record
+    const existingVote = await this.prismaService.votingBooth.findFirst({
+      where: { tokenId },
+    });
+
+    if (existingVote) {
+      // If the vote exists, update the `time_stamp` field
+      const updatedVote = await this.prismaService.votingBooth.update({
+        where: { tokenId },
+        data: { time_Stamp: time_stampInDate },
+      });
+
+      console.log('Vote updated:', updatedVote);
+    } else {
+      const newVote = await this.prismaService.votingBooth.create({
+        data: {
+          tokenId,
+          time_Stamp: time_stampInDate,
+        },
+      });
+
+      console.log('New vote created:', newVote);
     }
   }
 

@@ -8,7 +8,9 @@ export enum EventName {
   PILL_FAME_UPDATED = 'PillFameUpdated',
   PILL_DEFAME_UPDATED = 'PillDefameUpdated',
   PHARMACY_STOCK_UPDATED = 'PharmacyStockUpdate',
+  PILL_VOTE_TIMESTAMP = 'PillVoteTimeStamp',
 }
+
 export const TRANSFER_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('Transfer'),
 );
@@ -30,8 +32,14 @@ export const PILL_DEFAME_UPDATED_KEY = FieldElement.fromBigInt(
 export const PHARMARCY_STOCK_UPDATE = FieldElement.fromBigInt(
   hash.getSelectorFromName('PharmacyStockUpdate'),
 );
+export const PILL_VOTE_TIMESTAMP = FieldElement.fromBigInt(
+  hash.getSelectorFromName('PillVoteTimeStamp'),
+);
 export const CONTRACT_ADDRESS = FieldElement.fromBigInt(
   '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd',
+);
+export const VOTING_CONTRACT_ADDRESS = FieldElement.fromBigInt(
+  '0x010ab205e318e0e6104b964b6186d223bac81c964a4666da42290c2a2228cba4',
 );
 
 export const NULL_FELT =
@@ -109,6 +117,17 @@ export const decodePharmacyStockUpdate = (
     index: parseInt(index, 16),
     startAmount: parseInt(startAmount, 16),
     ammount_left: parseInt(ammount_left, 16),
+  };
+};
+export const decodePillVoteTimeStamp = (
+  eventData: starknet.IFieldElement[],
+) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[0]) + FieldElement.toBigInt(eventData[1]);
+  const time_stamp = FieldElement.toBigInt(eventData[2]);
+  return {
+    tokenId: Number(tokenId.toString()),
+    time_stamp: Number(time_stamp.toString()),
   };
 };
 
@@ -189,8 +208,7 @@ export const getMetadataFromContract = async (id: number) => {
     mintPrice,
     ingredient,
     background,
-    fame,
-    defame,
+    fame: Number(fame) - Number(defame),
   };
 };
 
@@ -263,6 +281,9 @@ export interface PharmacyStockData extends TrxnData {
   startAmount: number;
   ammount_left: number;
 }
+export interface PillVoteTimeStampData extends TrxnData {
+  time_stamp: number;
+}
 export type IndexBlockData =
   | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
   | { data: TransferData; eventType: EventName.Transfer }
@@ -270,7 +291,8 @@ export type IndexBlockData =
   | { data: ScalarRemoveData; eventType: EventName.SCALAR_REMOVE }
   | { data: PillFameData; eventType: EventName.PILL_FAME_UPDATED }
   | { data: PillFameData; eventType: EventName.PILL_DEFAME_UPDATED }
-  | { data: PharmacyStockData; eventType: EventName.PHARMACY_STOCK_UPDATED };
+  | { data: PharmacyStockData; eventType: EventName.PHARMACY_STOCK_UPDATED }
+  | { data: PillVoteTimeStampData; eventType: EventName.PILL_VOTE_TIMESTAMP };
 
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');

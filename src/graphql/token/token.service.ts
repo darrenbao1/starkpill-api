@@ -107,6 +107,35 @@ export class TokenService {
     });
     return this.findTokensById(tokenIds.map((token) => token.id));
   }
+  async findAllTokensByHighestFame(paginationArgs: PaginationArgs) {
+    const tokenIds = await this.prismaService.tokenMetadata.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      orderBy: [
+        {
+          fame: 'desc',
+        },
+        {
+          id: 'asc',
+        },
+      ],
+    });
+    return this.findTokensById(tokenIds.map((token) => token.id));
+  }
+
+  //find all tokens by lowest fame
+  async findAllTokensByLatest(paginationArgs: PaginationArgs) {
+    const tokenIds = await this.prismaService.tokenMetadata.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      orderBy: [
+        {
+          id: 'desc',
+        },
+      ],
+    });
+    return this.findTokensById(tokenIds.map((token) => token.id));
+  }
 
   async findMetadataByTokenId(id: number) {
     const metadata = await this.prismaService.tokenMetadata.findFirst({
@@ -130,7 +159,7 @@ export class TokenService {
         },
       },
     });
-    
+
     return backpackTokens;
   }
   async findBackPackTokens(address: string) {
@@ -140,5 +169,19 @@ export class TokenService {
     return this.findBackPackTokensById(
       backpackTokensIds.map((token) => token.id),
     );
+  }
+
+  async getVotingPower(tokenIds: number[]) {
+    const cutOffTime = new Date(
+      Date.now() - 24 * 60 * 60 * 1000 - 10 * 60 * 1000,
+    );
+    await this.prismaService.votingBooth.deleteMany({
+      where: { time_Stamp: { lt: cutOffTime } },
+    });
+    const remainingVotes = await this.prismaService.votingBooth.findMany();
+    const filteredTokenIds = tokenIds.filter(
+      (tokenId) => !remainingVotes.some((vote) => vote.tokenId === tokenId),
+    );
+    return filteredTokenIds.length;
   }
 }

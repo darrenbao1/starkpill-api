@@ -34,6 +34,8 @@ export class BlocksProcessor {
       await this.blocksService.handleFameOrDefame(data);
     } else if (eventType === EventName.PHARMACY_STOCK_UPDATED) {
       await this.blocksService.handlePharmacyStockUpdated(data);
+    } else if (eventType === EventName.PILL_VOTE_TIMESTAMP) {
+      await this.blocksService.handlePillVoteTimestamp(data);
     }
   }
 

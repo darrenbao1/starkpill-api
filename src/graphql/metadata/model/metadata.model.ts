@@ -19,7 +19,4 @@ export class Metadata {
 
   @Field(() => Number)
   fame: number;
-
-  @Field(() => Number)
-  defame: number;
 }
