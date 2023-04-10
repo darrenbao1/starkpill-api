@@ -1,5 +1,6 @@
 import { Abi, Contract, hash, Provider, number, uint256 } from 'starknet';
 import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
+//4th step Add EventName here
 export enum EventName {
   Prescription_Updated = 'PrescriptionUpdated',
   Transfer = 'Transfer',
@@ -9,8 +10,16 @@ export enum EventName {
   PILL_DEFAME_UPDATED = 'PillDefameUpdated',
   PHARMACY_STOCK_UPDATED = 'PharmacyStockUpdate',
   PILL_VOTE_TIMESTAMP = 'PillVoteTimeStamp',
+  ATTRIBUTE_ADDED = 'AttributeAdded',
+  TRAIT_VOTE_TIME_STAMP = 'TraitVoteTimeStamp',
 }
-
+//1st step Add Event key here
+export const TRAIT_VOTE_TIME_STAMP = FieldElement.fromBigInt(
+  hash.getSelectorFromName('TraitVoteTimeStamp'),
+);
+export const ATTRIBUTE_ADDED = FieldElement.fromBigInt(
+  hash.getSelectorFromName('AttributeAdded'),
+);
 export const TRANSFER_KEY = FieldElement.fromBigInt(
   hash.getSelectorFromName('Transfer'),
 );
@@ -35,6 +44,7 @@ export const PHARMARCY_STOCK_UPDATE = FieldElement.fromBigInt(
 export const PILL_VOTE_TIMESTAMP = FieldElement.fromBigInt(
   hash.getSelectorFromName('PillVoteTimeStamp'),
 );
+//2nd Step add contract address here if needed
 export const CONTRACT_ADDRESS = FieldElement.fromBigInt(
   '0x05ef092a31619faa63bf317bbb636bfbba86baf8e0e3e8d384ee764f2904e5dd',
 );
@@ -55,17 +65,42 @@ export const uint8ToString = (uint8Arr: Uint8Array) => {
   }
   return result;
 };
-
+//step 5 add event decoder here
+export const decodeTraitVoteTimeStamp = (
+  eventData: starknet.IFieldElement[],
+) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[2]) + FieldElement.toBigInt(eventData[3]);
+  const time_stamp = FieldElement.toBigInt(eventData[4]);
+  return {
+    tokenId: Number(tokenId.toString()),
+    time_stamp: Number(time_stamp.toString()),
+  };
+};
+export const decodeAttributeAdded = (eventData: starknet.IFieldElement[]) => {
+  const tokenId =
+    FieldElement.toBigInt(eventData[0]) + FieldElement.toBigInt(eventData[1]);
+  const attrId =
+    FieldElement.toBigInt(eventData[2]) + FieldElement.toBigInt(eventData[3]);
+  return {
+    tokenId: Number(tokenId.toString()),
+    attrId: Number(attrId.toString()),
+  };
+};
 export const decodePrescriptionUpdated = (
   eventData: starknet.IFieldElement[],
 ) => {
+  const owner = FieldElement.toHex(eventData[0]);
+  const tokenId =
+    FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  const mintPrice =
+    FieldElement.toBigInt(eventData[3]) + FieldElement.toBigInt(eventData[4]);
   const dataArray = eventData.map((d) => FieldElement.toHex(d));
-  const [owner, tokenId, , mintPrice, , oldIng, , oldBG, , newIng, , newBG] =
-    dataArray;
+  const [, , , , , oldIng, , oldBG, , newIng, , newBG] = dataArray;
   return {
     owner: convertToStandardWalletAddress(owner),
-    tokenId: parseInt(tokenId, 16),
-    mintPrice: parseInt(mintPrice, 16),
+    tokenId: Number(tokenId.toString()),
+    mintPrice: mintPrice.toString(),
     oldIng: parseInt(oldIng, 16),
     oldBG: parseInt(oldBG, 16),
     newIng: parseInt(newIng, 16),
@@ -153,7 +188,7 @@ interface TokenMetadata {
   description: string;
   image: string;
   attributes: [
-    { trait_type: 'Medical Bill'; value: number },
+    { trait_type: 'Medical Bill'; value: bigint },
     { trait_type: 'Ingredient'; value: string },
     { trait_type: 'Background'; value: string },
     { trait_type: 'Fame'; value: number },
@@ -196,7 +231,7 @@ export const getMetadataFromContract = async (id: number) => {
   const imageUrl = jsonMetadata.image;
   const atributes = jsonMetadata.attributes;
   // !: If '' is returned for ingredient or background, it means there's no value
-  const mintPrice = atributes[0]?.value ?? 0;
+  const mintPrice = atributes[0]?.value ?? BigInt('0');
   const ingredient = atributes[1]?.value ?? '';
   const background = atributes[2]?.value ?? '';
   const fame = atributes[3]?.value ?? 0;
@@ -250,10 +285,14 @@ interface TrxnData {
   blockNumber: number;
   transactionHash: string;
 }
-
+//3rd step add new event data type
+export interface AttributedAddedData extends TrxnData {
+  tokenId: number;
+  attrId: number;
+}
 export interface PrescriptionUpdatedData extends TrxnData {
   owner: string;
-  mintPrice: number;
+  mintPrice: string;
   oldIng: number;
   oldBG: number;
   newIng: number;
@@ -284,6 +323,7 @@ export interface PharmacyStockData extends TrxnData {
 export interface PillVoteTimeStampData extends TrxnData {
   time_stamp: number;
 }
+//step 6 add new IndexBlockData enum
 export type IndexBlockData =
   | { data: PrescriptionUpdatedData; eventType: EventName.Prescription_Updated }
   | { data: TransferData; eventType: EventName.Transfer }
@@ -292,7 +332,9 @@ export type IndexBlockData =
   | { data: PillFameData; eventType: EventName.PILL_FAME_UPDATED }
   | { data: PillFameData; eventType: EventName.PILL_DEFAME_UPDATED }
   | { data: PharmacyStockData; eventType: EventName.PHARMACY_STOCK_UPDATED }
-  | { data: PillVoteTimeStampData; eventType: EventName.PILL_VOTE_TIMESTAMP };
+  | { data: PillVoteTimeStampData; eventType: EventName.PILL_VOTE_TIMESTAMP }
+  | { data: AttributedAddedData; eventType: EventName.ATTRIBUTE_ADDED }
+  | { data: PillVoteTimeStampData; eventType: EventName.TRAIT_VOTE_TIME_STAMP };
 
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');

@@ -12,6 +12,7 @@ import {
 import { Filter, FieldElement, v1alpha2 as starknet } from '@apibara/starknet';
 import { AppIndexer } from 'src/indexing/AppIndexer';
 import {
+  ATTRIBUTE_ADDED,
   CONTRACT_ADDRESS,
   INTERVAL_STREAM_CHECK,
   PHARMARCY_STOCK_UPDATE,
@@ -22,6 +23,7 @@ import {
   RESTART_STREAM_AFTER,
   SCALAR_REMOVE_KEY,
   SCALAR_TRANSFER_KEY,
+  TRAIT_VOTE_TIME_STAMP,
   TRANSFER_KEY,
   VOTING_CONTRACT_ADDRESS,
 } from 'src/indexing/utils';
@@ -101,6 +103,15 @@ export class BlocksModule {
         ev
           .withFromAddress(VOTING_CONTRACT_ADDRESS)
           .withKeys([PILL_VOTE_TIMESTAMP]),
+      )
+      //step 7 add AttributeAdded event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([ATTRIBUTE_ADDED]),
+      )
+      .addEvent((ev) =>
+        ev
+          .withFromAddress(VOTING_CONTRACT_ADDRESS)
+          .withKeys([TRAIT_VOTE_TIME_STAMP]),
       )
       .encode();
     this.client.configure({

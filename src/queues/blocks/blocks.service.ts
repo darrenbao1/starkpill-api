@@ -17,6 +17,7 @@ import {
   PillFameData,
   PharmacyStockData,
   PillVoteTimeStampData,
+  AttributedAddedData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
@@ -255,6 +256,33 @@ export class BlocksService {
       });
 
       console.log('New vote created:', newVote);
+    }
+  }
+  //step 9
+  async handleAttributeAdded({
+    tokenId,
+    attrId,
+    ...eventData
+  }: AttributedAddedData) {
+    if (attrId != 1) {
+      //irrevelant attribute added event
+      return;
+    } else {
+      //check if tokenId exists in VotingPowerIds
+      const existingVote = await this.prismaService.votingPowerIds.findFirst({
+        where: { tokenId },
+      });
+      if (existingVote) {
+        // If tokenId exists, ignore the event
+        return;
+      } else {
+        //create a new record
+        const newVote = await this.prismaService.votingPowerIds.create({
+          data: {
+            tokenId,
+          },
+        });
+      }
     }
   }
 

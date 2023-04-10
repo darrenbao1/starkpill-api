@@ -30,6 +30,10 @@ import {
   decodePharmacyStockUpdate,
   PILL_VOTE_TIMESTAMP,
   decodePillVoteTimeStamp,
+  ATTRIBUTE_ADDED,
+  decodeAttributeAdded,
+  TRAIT_VOTE_TIME_STAMP,
+  decodeTraitVoteTimeStamp,
 } from './utils';
 
 /**
@@ -182,6 +186,32 @@ export class AppIndexer {
               ...commonData,
             },
             //TODO
+          });
+        }
+        //step 10 use the decoder here.
+        else if (
+          FieldElement.toHex(ATTRIBUTE_ADDED) === FieldElement.toHex(eventKey)
+        ) {
+          console.log('Attribute added event');
+          eventsArr.push({
+            eventType: EventName.ATTRIBUTE_ADDED,
+            data: {
+              ...decodeAttributeAdded(event.data),
+              ...commonData,
+            },
+          });
+        } else if (
+          FieldElement.toHex(TRAIT_VOTE_TIME_STAMP) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('TraittimeStamp event');
+          console.log(decodeTraitVoteTimeStamp(event.data));
+          eventsArr.push({
+            eventType: EventName.TRAIT_VOTE_TIME_STAMP,
+            data: {
+              ...decodeTraitVoteTimeStamp(event.data),
+              ...commonData,
+            },
           });
         }
 
