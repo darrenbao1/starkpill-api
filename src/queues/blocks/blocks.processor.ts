@@ -16,7 +16,7 @@ export class BlocksProcessor {
   private readonly logger = new Logger(BlocksProcessor.name);
 
   constructor(private readonly blocksService: BlocksService) {}
-
+  //step 8 add processor function here
   @Process(INDEX_BLOCK)
   async indexBlock(job: Job<IndexBlockData>) {
     const { data, eventType } = job.data;
@@ -35,6 +35,10 @@ export class BlocksProcessor {
     } else if (eventType === EventName.PHARMACY_STOCK_UPDATED) {
       await this.blocksService.handlePharmacyStockUpdated(data);
     } else if (eventType === EventName.PILL_VOTE_TIMESTAMP) {
+      await this.blocksService.handlePillVoteTimestamp(data);
+    } else if (eventType === EventName.ATTRIBUTE_ADDED) {
+      await this.blocksService.handleAttributeAdded(data);
+    } else if (eventType === EventName.TRAIT_VOTE_TIME_STAMP) {
       await this.blocksService.handlePillVoteTimestamp(data);
     }
   }

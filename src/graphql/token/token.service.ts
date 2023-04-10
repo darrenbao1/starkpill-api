@@ -148,8 +148,6 @@ export class TokenService {
     };
   }
 
-
-
   //back pack functions
   async findBackPackTokensById(tokenIds: number[]) {
     const backpackTokens = await this.prismaService.backpackMetadata.findMany({
@@ -178,10 +176,33 @@ export class TokenService {
     await this.prismaService.votingBooth.deleteMany({
       where: { time_Stamp: { lt: cutOffTime } },
     });
+    const result = await this.findTokensById(tokenIds);
+    const backgroundNumbers = result.map((token) => {
+      if (token.background !== 0) {
+        return token.background;
+      }
+    });
+    const ingredientNumbers = result.map((token) => {
+      if (token.ingredient !== 0) {
+        return token.ingredient;
+      }
+    });
+    const hasVotingPowerIds =
+      await this.prismaService.votingPowerIds.findMany();
     const remainingVotes = await this.prismaService.votingBooth.findMany();
-    const filteredTokenIds = tokenIds.filter(
-      (tokenId) => !remainingVotes.some((vote) => vote.tokenId === tokenId),
+    const allTokenIds = [
+      ...backgroundNumbers,
+      ...ingredientNumbers,
+      ...tokenIds,
+    ];
+    const filteredTokenIds = allTokenIds.filter((tokenId) =>
+      hasVotingPowerIds.some(
+        (votingPowerId) => votingPowerId.tokenId === tokenId,
+      ),
     );
-    return filteredTokenIds.length;
+    const finalTokenIds = filteredTokenIds.filter((tokenId) =>
+      remainingVotes.every((vote) => vote.tokenId !== tokenId),
+    );
+    return finalTokenIds.length;
   }
 }

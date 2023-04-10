@@ -98,3 +98,7 @@ model VotingBooth {
   tokenId Int @id
   time_Stamp DateTime
 }
+
+model VotingPowerIds {
+  tokenId Int @id
+}
