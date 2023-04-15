@@ -45,6 +45,11 @@ export class TokenResolver {
   async metadata(@Parent() token: Token) {
     return this.tokenService.findMetadataByTokenId(token.id);
   }
+  // order by lowest fame pill
+  @Query(() => [Token])
+  async allTokenByLowestFame(@Args() paginationArgs: PaginationArgs) {
+    return this.tokenService.findAllTokensByLowestFame(paginationArgs);
+  }
 
   @Query(() => [BackPackMetadata])
   async ownerBackpack(
@@ -52,5 +57,4 @@ export class TokenResolver {
   ) {
     return this.tokenService.findBackPackTokens(ownerAddress);
   }
-
 }

@@ -122,6 +122,22 @@ export class TokenService {
     });
     return this.findTokensById(tokenIds.map((token) => token.id));
   }
+  //find all tokens by lowest fame
+  async findAllTokensByLowestFame(paginationArgs: PaginationArgs) {
+    const tokenIds = await this.prismaService.tokenMetadata.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      orderBy: [
+        {
+          fame: 'asc',
+        },
+        {
+          id: 'asc',
+        },
+      ],
+    });
+    return this.findTokensById(tokenIds.map((token) => token.id));
+  }
 
   //find all tokens by lowest fame
   async findAllTokensByLatest(paginationArgs: PaginationArgs) {
