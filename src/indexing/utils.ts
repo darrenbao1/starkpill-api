@@ -14,6 +14,8 @@ export enum EventName {
   TRAIT_VOTE_TIME_STAMP = 'TraitVoteTimeStamp',
 }
 //1st step Add Event key here
+
+
 export const TRAIT_VOTE_TIME_STAMP = FieldElement.fromBigInt(
   hash.getSelectorFromName('TraitVoteTimeStamp'),
 );
@@ -245,6 +247,28 @@ export const getMetadataFromContract = async (id: number) => {
     background,
     fame: Number(fame) - Number(defame),
   };
+};
+
+export const checkIfIsTraitOrPill = async (id: number) => {
+  const provider = new Provider({ sequencer: { network: 'goerli-alpha' } });
+  const contract = new Contract(
+    testpillAbi as Abi,
+    FieldElement.toHex(CONTRACT_ADDRESS),
+    provider,
+  );
+  const contractUriRaw = await contract.call('tokenURI', [
+    uint256.bnToUint256(number.toBN(id)),
+  ]);
+  const resultArray = contractUriRaw.map((data) =>
+    number.bigNumberishArrayToHexadecimalStringArray(data),
+  );
+  const jsonMetadata = JSON.parse(
+    resultArray[0].map((json) => hex2a(json)).join(''),
+  );
+  return (
+    jsonMetadata.name.startsWith('PillBackground') ||
+    jsonMetadata.name.startsWith('PillIngredient')
+  );
 };
 
 export const getBackpackFromContract = async (id: number) => {

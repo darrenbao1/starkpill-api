@@ -70,7 +70,7 @@
 
 "@apibara/protocol@^0.4.4":
   version "0.4.4"
-  resolved "https://registry.npmjs.org/@apibara/protocol/-/protocol-0.4.4.tgz"
+  resolved "https://registry.yarnpkg.com/@apibara/protocol/-/protocol-0.4.4.tgz#e77d2e96e89589f79d393e56fb62acf55767f75d"
   integrity sha512-huHQlD70h9OLxVIpRzrR+FPFhsYA5hV49qqrNvMVgM5+tSiwxCkkrP9zeIJo4vwJ55e2V5UKrNCYXV7tWMw+hg==
   dependencies:
     "@grpc/grpc-js" "^1.7.3"
@@ -79,10 +79,10 @@
     long "^5.2.1"
     protobufjs "^7.1.2"
 
-"@apibara/starknet@^0.2.0-next.0":
-  version "0.2.0-next.0"
-  resolved "https://registry.npmjs.org/@apibara/starknet/-/starknet-0.2.0-next.0.tgz"
-  integrity sha512-VH0v4qIgE2UuGPnyG96kCkFfrJLWFQmJ8HpSS1FDrTFOHTNkg3pM3EZuJJfFc36Us0yOugpNG8N6XUi3WLSsiQ==
+"@apibara/starknet@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@apibara/starknet/-/starknet-0.2.1.tgz#c48c8ca1c1ad911e746ca96affbaac7e4fa90391"
+  integrity sha512-0bCxGPRz2MvMYn77T6u5HP8LyFvS2SIMLpYBciEnSVY7SWWo9RneF+XkSrw8TVmas/bYFkAxWxIZu3/V7gZykQ==
   dependencies:
     google-protobuf "^3.21.2"
     long "^5.2.1"

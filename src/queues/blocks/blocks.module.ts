@@ -58,10 +58,7 @@ export class BlocksModule {
     //create stream
     console.log('creating stream');
     this.indexer = new AppIndexer();
-    if (initialBlock > 792000) {
-      this.cursor = Cursor.createWithOrderKey(initialBlock);
-    }
-
+    this.cursor = Cursor.createWithOrderKey(initialBlock);
     this.client = new StreamClient({
       url: 'goerli.starknet.a5a.ch',
       credentials: ChannelCredentials.createSsl(),
