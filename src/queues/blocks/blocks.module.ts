@@ -23,6 +23,7 @@ import {
   RESTART_STREAM_AFTER,
   SCALAR_REMOVE_KEY,
   SCALAR_TRANSFER_KEY,
+  TRAIT_REDEMPTION_KEY,
   TRAIT_VOTE_TIME_STAMP,
   TRANSFER_KEY,
   VOTING_CONTRACT_ADDRESS,
@@ -57,8 +58,10 @@ export class BlocksModule {
   private async createStream(initialBlock: number) {
     //create stream
     console.log('creating stream');
+    console.log(initialBlock);
     this.indexer = new AppIndexer();
     this.cursor = Cursor.createWithOrderKey(initialBlock);
+    console.log(this.cursor, 'cursor');
     this.client = new StreamClient({
       url: 'goerli.starknet.a5a.ch',
       credentials: ChannelCredentials.createSsl(),
@@ -97,6 +100,10 @@ export class BlocksModule {
       //adding pharmacy stock update event
       .addEvent((ev) =>
         ev.withFromAddress(CONTRACT_ADDRESS).withKeys([PHARMARCY_STOCK_UPDATE]),
+      )
+      //adding TraitRedemption event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([TRAIT_REDEMPTION_KEY]),
       )
       //adding PillVoteTimeStamp event
       .addEvent((ev) =>
@@ -141,12 +148,14 @@ export class BlocksModule {
 
   async restartStream() {
     console.log('restarting stream');
+    console.log((await this.blocksService.getLastIndexedBlock()) + 1);
     const blockToRestartFrom =
       (await this.blocksService.getLastIndexedBlock()) + 1;
     this.createStream(blockToRestartFrom); // change to last indexed block + 1
   }
 
   async onModuleInit() {
+    console.log((await this.blocksService.getLastIndexedBlock()) + 1);
     this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
 
     this.interval = setInterval(async () => {

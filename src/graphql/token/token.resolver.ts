@@ -50,11 +50,18 @@ export class TokenResolver {
   async allTokenByLowestFame(@Args() paginationArgs: PaginationArgs) {
     return this.tokenService.findAllTokensByLowestFame(paginationArgs);
   }
-
+  //Not supposed to be here I'm too lazy to create another
   @Query(() => [BackPackMetadata])
   async ownerBackpack(
     @Args('ownerAddress', { type: () => String }) ownerAddress: string,
   ) {
     return this.tokenService.findBackPackTokens(ownerAddress);
+  }
+  @Query(() => [Boolean])
+  async checkIsClaimed(
+    @Args('tokenIds', { type: () => [Int] }) tokenIds: number[],
+    @Args('contract_address', { type: () => String }) contract_address: string,
+  ) {
+    return this.tokenService.checkIsClaimed(contract_address, tokenIds);
   }
 }

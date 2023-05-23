@@ -95,6 +95,7 @@ type Query {
   allTokensByLatest(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
   allTokenByLowestFame(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Token!]!
   ownerBackpack(ownerAddress: String!): [BackPackMetadata!]!
+  checkIsClaimed(tokenIds: [Int!]!, contract_address: String!): [Boolean!]!
   transaction(transactionHash: String!): Transaction!
   transactions(transactionHashes: [String!]!): [Transaction!]!
   allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!

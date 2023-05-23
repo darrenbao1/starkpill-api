@@ -102,3 +102,11 @@ model VotingBooth {
 model VotingPowerIds {
   tokenId Int @id
 }
+
+model TraitRedemption {
+  L1_Address String 
+  L1_TokenId Int
+  tokenId Int
+  to String
+  @@id([L1_Address, L1_TokenId], name: "L1_Address_L1_TokenId")
+}

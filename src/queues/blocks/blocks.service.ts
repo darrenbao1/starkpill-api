@@ -19,6 +19,7 @@ import {
   PillVoteTimeStampData,
   AttributedAddedData,
   checkIfIsTraitOrPill,
+  TraitRedemptionData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
@@ -287,6 +288,51 @@ export class BlocksService {
     }
   }
   //step 9
+
+  async handleTraitRedemption({ tokenId, ...eventData }: TraitRedemptionData) {
+    console.log('Trait redemption event detected, updating token metadata');
+    //Check if Primary key which is L1_Address and L1_TokenId exists in TraitRedemption
+    const existingRedemption =
+      await this.prismaService.traitRedemption.findFirst({
+        where: {
+          L1_Address: eventData.L1_address,
+          L1_TokenId: eventData.L1_token_id,
+        },
+      });
+    if (existingRedemption) {
+      console.log('Trait redemption already exists');
+      return;
+    } else {
+      //If it doesn't exist, create a new record
+      const newRedemption = await this.prismaService.traitRedemption.create({
+        data: {
+          L1_Address: eventData.L1_address,
+          L1_TokenId: eventData.L1_token_id,
+          tokenId: tokenId,
+          to: eventData.to,
+        },
+      });
+      console.log('New trait redemption created:', newRedemption);
+      //Create a new recored in BackPack. with tokenId and to
+      //Should do a check if tokenId already exists in BackPack
+      if (
+        await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
+      ) {
+        console.log('this trait has already been claimed!');
+        return;
+      }
+      const result = await this.prismaService.backpack.create({
+        data: {
+          id: tokenId,
+          ownerAddress: eventData.to,
+        },
+      });
+      console.log('Trait Claimed!');
+      console.log(result);
+      this.backpackMetadataService.queueIndexMetadata(tokenId);
+    }
+  }
+
   async handleAttributeAdded({
     tokenId,
     attrId,
@@ -353,7 +399,7 @@ export class BlocksService {
   async getLastIndexedBlock() {
     return (
       (await this.prismaService.metadata.findFirst({ where: { id: 1 } }))
-        ?.lastIndexedBlock ?? 0 // replace with seeded value
+        ?.lastIndexedBlock ?? 500000 // replace with seeded value
     );
   }
 
