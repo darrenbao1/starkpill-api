@@ -57,4 +57,11 @@ export class TokenResolver {
   ) {
     return this.tokenService.findBackPackTokens(ownerAddress);
   }
+  @Query(() => [Boolean])
+  async checkIsClaimed(
+    @Args('tokenIds', { type: () => [Int] }) tokenIds: number[],
+    @Args('contract_address', { type: () => String }) contract_address: string,
+  ) {
+    return this.tokenService.checkIsClaimed(contract_address, tokenIds);
+  }
 }

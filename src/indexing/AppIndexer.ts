@@ -34,6 +34,8 @@ import {
   decodeAttributeAdded,
   TRAIT_VOTE_TIME_STAMP,
   decodeTraitVoteTimeStamp,
+  TRAIT_REDEMPTION_KEY,
+  decodeTraitRedemption,
 } from './utils';
 
 /**
@@ -189,7 +191,20 @@ export class AppIndexer {
           });
         }
         //step 10 use the decoder here.
+        //TraitRedemption event check
         else if (
+          FieldElement.toHex(TRAIT_REDEMPTION_KEY) ===
+          FieldElement.toHex(eventKey)
+        ) {
+          console.log('TraitRedemption event');
+          eventsArr.push({
+            eventType: EventName.TRAIT_REDEMPTION,
+            data: {
+              ...decodeTraitRedemption(event.data),
+              ...commonData,
+            },
+          });
+        } else if (
           FieldElement.toHex(ATTRIBUTE_ADDED) === FieldElement.toHex(eventKey)
         ) {
           console.log('Attribute added event');

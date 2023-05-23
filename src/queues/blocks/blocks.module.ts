@@ -23,6 +23,7 @@ import {
   RESTART_STREAM_AFTER,
   SCALAR_REMOVE_KEY,
   SCALAR_TRANSFER_KEY,
+  TRAIT_REDEMPTION_KEY,
   TRAIT_VOTE_TIME_STAMP,
   TRANSFER_KEY,
   VOTING_CONTRACT_ADDRESS,
@@ -106,6 +107,9 @@ export class BlocksModule {
           .withKeys([PILL_VOTE_TIMESTAMP]),
       )
       //step 7 add AttributeAdded event
+      .addEvent((ev) =>
+        ev.withFromAddress(CONTRACT_ADDRESS).withKeys([TRAIT_REDEMPTION_KEY]),
+      )
       .addEvent((ev) =>
         ev.withFromAddress(CONTRACT_ADDRESS).withKeys([ATTRIBUTE_ADDED]),
       )

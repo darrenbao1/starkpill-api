@@ -12,8 +12,12 @@ export enum EventName {
   PILL_VOTE_TIMESTAMP = 'PillVoteTimeStamp',
   ATTRIBUTE_ADDED = 'AttributeAdded',
   TRAIT_VOTE_TIME_STAMP = 'TraitVoteTimeStamp',
+  TRAIT_REDEMPTION = 'TraitRedemption',
 }
 //1st step Add Event key here
+export const TRAIT_REDEMPTION_KEY = FieldElement.fromBigInt(
+  hash.getSelectorFromName('TraitRedemption'),
+);
 export const TRAIT_VOTE_TIME_STAMP = FieldElement.fromBigInt(
   hash.getSelectorFromName('TraitVoteTimeStamp'),
 );
@@ -66,6 +70,20 @@ export const uint8ToString = (uint8Arr: Uint8Array) => {
   return result;
 };
 //step 5 add event decoder here
+export const decodeTraitRedemption = (eventData: starknet.IFieldElement[]) => {
+  const l1_address = FieldElement.toHex(eventData[0]);
+  const l1_token_id =
+    FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  const tokenId =
+    FieldElement.toBigInt(eventData[3]) + FieldElement.toBigInt(eventData[4]);
+  const to = FieldElement.toHex(eventData[5]);
+  return {
+    l1_address: l1_address,
+    l1_tokenId: Number(l1_token_id.toString()),
+    tokenId: Number(tokenId.toString()),
+    to: convertToStandardWalletAddress(to),
+  };
+};
 export const decodeTraitVoteTimeStamp = (
   eventData: starknet.IFieldElement[],
 ) => {
@@ -286,6 +304,12 @@ interface TrxnData {
   transactionHash: string;
 }
 //3rd step add new event data type
+export interface TraitRedemptionData extends TrxnData {
+  l1_address: string;
+  l1_tokenId: number;
+  tokenId: number;
+  to: string;
+}
 export interface AttributedAddedData extends TrxnData {
   tokenId: number;
   attrId: number;
@@ -334,7 +358,8 @@ export type IndexBlockData =
   | { data: PharmacyStockData; eventType: EventName.PHARMACY_STOCK_UPDATED }
   | { data: PillVoteTimeStampData; eventType: EventName.PILL_VOTE_TIMESTAMP }
   | { data: AttributedAddedData; eventType: EventName.ATTRIBUTE_ADDED }
-  | { data: PillVoteTimeStampData; eventType: EventName.TRAIT_VOTE_TIME_STAMP };
+  | { data: PillVoteTimeStampData; eventType: EventName.TRAIT_VOTE_TIME_STAMP }
+  | { data: TraitRedemptionData; eventType: EventName.TRAIT_REDEMPTION };
 
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');

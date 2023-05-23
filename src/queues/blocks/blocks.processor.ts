@@ -40,6 +40,8 @@ export class BlocksProcessor {
       await this.blocksService.handleAttributeAdded(data);
     } else if (eventType === EventName.TRAIT_VOTE_TIME_STAMP) {
       await this.blocksService.handlePillVoteTimestamp(data);
+    } else if (eventType === EventName.TRAIT_REDEMPTION) {
+      await this.blocksService.handleTraitRedemption(data);
     }
   }
 

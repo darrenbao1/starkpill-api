@@ -184,6 +184,27 @@ export class TokenService {
       backpackTokensIds.map((token) => token.id),
     );
   }
+  async checkIsClaimed(
+    contract_address: string,
+    tokenIds: number[],
+  ): Promise<boolean[]> {
+    const results: boolean[] = await Promise.all(
+      tokenIds.map(async (tokenId) => {
+        // Check against TraitRedemption table for each tokenId and contract_address
+        const traitRedemption =
+          await this.prismaService.traitRedemption.findMany({
+            where: {
+              l1_address: contract_address,
+              l1_tokenId: tokenId,
+            },
+          });
+
+        return traitRedemption.length > 0; // Return true if there are matching records, false otherwise
+      }),
+    );
+
+    return results;
+  }
 
   async getVotingPower(tokenIds: number[]) {
     const cutOffTime = new Date(
