@@ -325,7 +325,7 @@ export class BlocksService {
   async getLastIndexedBlock() {
     return (
       (await this.prismaService.metadata.findFirst({ where: { id: 1 } }))
-        ?.lastIndexedBlock ?? 0 // replace with seeded value
+        ?.lastIndexedBlock ?? 503000 // replace with seeded value
     );
   }
 
