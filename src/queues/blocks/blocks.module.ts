@@ -142,13 +142,12 @@ export class BlocksModule {
 
   async restartStream() {
     console.log('restarting stream');
-    const blockToRestartFrom =
-      (await this.blocksService.getLastIndexedBlock()) + 1;
+    const blockToRestartFrom = await this.blocksService.getLastIndexedBlock();
     this.createStream(blockToRestartFrom); // change to last indexed block + 1
   }
 
   async onModuleInit() {
-    this.createStream((await this.blocksService.getLastIndexedBlock()) + 1);
+    this.createStream(await this.blocksService.getLastIndexedBlock());
 
     this.interval = setInterval(async () => {
       const lastIndexedTime =
