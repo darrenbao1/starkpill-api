@@ -18,6 +18,7 @@ import {
   PharmacyStockData,
   PillVoteTimeStampData,
   AttributedAddedData,
+  checkIfIsTraitOrPill,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventType } from '@prisma/client';
@@ -190,7 +191,36 @@ export class BlocksService {
 
     console.log('transfer');
     console.log(result);
+    if (checkIfIsTraitOrPill(eventData.tokenId)) {
+      await this.handleTransferIfIsTraitOrPill({ from, ...eventData });
+    }
   }
+  async handleTransferIfIsTraitOrPill({ from, ...eventData }: TransferData) {
+    //Check if the eventData.tokenId exist in the backpack, if exist, then edit the owner address to eventData.to
+    if (
+      await this.prismaService.backpack.findFirst({
+        where: { id: eventData.tokenId },
+      })
+    ) {
+      console.log('this is a transfer from backpack to backpack');
+      const result = await this.prismaService.backpack.update({
+        where: { id: eventData.tokenId },
+        data: { ownerAddress: eventData.to },
+      });
+      console.log(result);
+      //else create a new record for the new trait
+    } else {
+      console.log('This is receiving a trait from contract.');
+      const result = await this.prismaService.backpack.create({
+        data: {
+          id: eventData.tokenId,
+          ownerAddress: eventData.to,
+        },
+      });
+      console.log(result);
+    }
+  }
+
   async handleScalarRemove({ tokenId, to, ...eventData }: ScalarRemoveData) {
     if (
       await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
