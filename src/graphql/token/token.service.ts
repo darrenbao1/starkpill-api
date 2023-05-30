@@ -16,31 +16,37 @@ export class TokenService {
     })[],
     id: number,
   ) {
-    const owner = rawTrxns[0].to; // get the first trxn as it's sorted in descending order
+    try {
+      const owner = rawTrxns[0].to; // get the first trxn as it's sorted in descending order
 
-    const latestChangeAttributeOrMint = rawTrxns.find(
-      (trxn) =>
-        trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
-    );
+      const latestChangeAttributeOrMint = rawTrxns.find(
+        (trxn) =>
+          trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
+      );
 
-    const background =
-      latestChangeAttributeOrMint.eventType === 'MINT'
-        ? latestChangeAttributeOrMint.Mint.background
-        : latestChangeAttributeOrMint.ChangeAttribute.newBackground;
-    const ingredient =
-      latestChangeAttributeOrMint.eventType === 'MINT'
-        ? latestChangeAttributeOrMint.Mint.ingredient
-        : latestChangeAttributeOrMint.ChangeAttribute.newIngredient;
+      const background =
+        latestChangeAttributeOrMint.eventType === 'MINT'
+          ? latestChangeAttributeOrMint.Mint.background
+          : latestChangeAttributeOrMint.ChangeAttribute.newBackground;
+      const ingredient =
+        latestChangeAttributeOrMint.eventType === 'MINT'
+          ? latestChangeAttributeOrMint.Mint.ingredient
+          : latestChangeAttributeOrMint.ChangeAttribute.newIngredient;
 
-    const transactions = rawTrxns.map(formatTransaction);
+      const transactions = rawTrxns.map(formatTransaction);
 
-    return {
-      id,
-      owner: { address: owner },
-      transactions,
-      background,
-      ingredient,
-    };
+      return {
+        id,
+        owner: { address: owner },
+        transactions,
+        background,
+        ingredient,
+      };
+    } catch (error) {
+      const tokenId = rawTrxns[0]?.tokenId || null;
+      console.log(tokenId, error);
+      return;
+    }
   }
 
   async findTokenById(tokenId: number) {
