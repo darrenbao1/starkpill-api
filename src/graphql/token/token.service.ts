@@ -44,8 +44,14 @@ export class TokenService {
       };
     } catch (error) {
       const tokenId = rawTrxns[0]?.tokenId || null;
-      console.log(tokenId, error);
-      return;
+      const transactions = rawTrxns.map(formatTransaction);
+      return {
+        id: tokenId,
+        owner: { address: null },
+        transactions,
+        background: null,
+        ingredient: null,
+      };
     }
   }
 
