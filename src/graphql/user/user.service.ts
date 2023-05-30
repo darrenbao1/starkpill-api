@@ -49,8 +49,13 @@ export class UserService {
       // find gets the first trxn in the array, so it's the most recent mint/transfer trxn
       const transaction = transactions.find((trxn) => trxn.tokenId === tokenId);
 
+      // Check if there is a mint event for the token ID if no, means it is not a pill.
+      const hasMintEvent = transactions.some(
+        (trxn) => trxn.eventType === 'MINT' && trxn.tokenId === tokenId,
+      );
       // If the last relevant trxn is a mint, add it. This means that the token was not transferred after minting
       if (
+        hasMintEvent &&
         transaction.eventType === 'MINT' &&
         transaction.to === lowercaseAddress
       ) {
@@ -58,6 +63,7 @@ export class UserService {
       }
       // If the last relevant trxn is a transfer and it was transferred to the user, add it.
       else if (
+        hasMintEvent &&
         transaction.eventType === 'TRANSFER' &&
         transaction.to === lowercaseAddress
       ) {
