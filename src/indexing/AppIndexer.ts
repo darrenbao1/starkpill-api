@@ -71,7 +71,7 @@ export class AppIndexer {
           //  null address and contract addresses
           const irrevelantAddresses = [
             FieldElement.toHex(CONTRACT_ADDRESS),
-            '0x0',
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
           ];
           const irrevelantTransfer =
             irrevelantAddresses.includes(FieldElement.toHex(event.data[0])) ||
