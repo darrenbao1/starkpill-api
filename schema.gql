@@ -79,6 +79,15 @@ type BackPackMetadata {
   itemName: String!
 }
 
+type BackPackMetadataWithEquipped {
+  id: Int!
+  description: String!
+  imageUrl: String!
+  isIngredient: Boolean!
+  itemName: String!
+  equippedById: Int!
+}
+
 type PharmacyData {
   typeIndex: Float!
   index: Float!
@@ -100,8 +109,11 @@ type Query {
   transactions(transactionHashes: [String!]!): [Transaction!]!
   allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!
   user(address: String!): User!
+  getEquippedIngredients(address: String!): [BackPackMetadataWithEquipped!]!
   lastIndexedBlock: Int!
+  getAllTokenIdsNotPresentInMetadata: [Int!]!
   getPharmacyData: [PharmacyData!]!
+  tokenIdsWithMissingMetadata: [Int!]!
 }
 
 """
@@ -116,4 +128,7 @@ type Mutation {
   mutation: String!
   refreshMetadataForOneToken(tokenId: Int!): String!
   refreshMetadataForAllTokens: String!
+  refreshBackPackMetadataForOneToken(tokenId: Int!): String!
+  refreshBackPackMetadataForAllTokens: String!
+  refreshBackPackMetadataForMissingTokens: String!
 }

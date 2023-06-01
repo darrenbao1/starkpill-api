@@ -13,18 +13,20 @@ export class BackpackMetadataService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async queueGetMissingMetadata() {
+    this.backpackQueue.clean(1000, 'failed');
     // find all the tokens that don't have metadata
     // and add them to the queue
     const presentTokenIdsPromise = this.prismaService.backpackMetadata
       .findMany()
       .then((tokenIds) => tokenIds.map((token) => token.id));
     // This is a superset of presentTokenIds as it is the source of truth of all tokens
-    const allTokenIdsPromise = this.prismaService.backpack
+    const allTokenIdsPromise = this.prismaService.knownTraits
       .findMany()
-      .then((tokenIds) => tokenIds.map((token) => token.id));
+      .then((tokenIds) => tokenIds.map((token) => token.tokenId));
     // Run them concurrently as they are independent
+
     const [presentTokenIds, allTokenIds] = await Promise.all([
       presentTokenIdsPromise,
       allTokenIdsPromise,
@@ -32,7 +34,8 @@ export class BackpackMetadataService {
     const missingTokenIds = allTokenIds.filter(
       (token) => !presentTokenIds.includes(token),
     );
-    missingTokenIds.forEach((id) => this.queueIndexMetadata(id));
+    const tokensToProcess = missingTokenIds.slice(0, 100);
+    tokensToProcess.forEach((id) => this.queueIndexMetadata(id));
   }
 
   async queueGetAllMetadata() {
@@ -43,6 +46,15 @@ export class BackpackMetadataService {
   }
 
   async queueIndexMetadata(id: number) {
+    //check if backpackMetadata already exist in db
+    const backpackMetadata =
+      await this.prismaService.backpackMetadata.findUnique({
+        where: { id },
+      });
+    if (backpackMetadata) {
+      console.log('backpack metadata already exist in db');
+      return;
+    }
     console.log('backpack metadata service');
     const waitingJobs = (await this.backpackQueue.getWaiting())
       .filter((job) => job.name === INDEX_BACKPACK)
@@ -61,5 +73,26 @@ export class BackpackMetadataService {
       create: backpackMetadata,
       update: backpackMetadata,
     });
+  }
+  async getMissingMetadata() {
+    // find all the tokens that don't have metadata
+    // and add them to the queue
+    const presentTokenIdsPromise = this.prismaService.backpackMetadata
+      .findMany()
+      .then((tokenIds) => tokenIds.map((token) => token.id));
+    // This is a superset of presentTokenIds as it is the source of truth of all tokens
+    const allTokenIdsPromise = this.prismaService.knownTraits
+      .findMany()
+      .then((tokenIds) => tokenIds.map((token) => token.tokenId));
+    // Run them concurrently as they are independent
+
+    const [presentTokenIds, allTokenIds] = await Promise.all([
+      presentTokenIdsPromise,
+      allTokenIdsPromise,
+    ]);
+    const missingTokenIds = allTokenIds.filter(
+      (token) => !presentTokenIds.includes(token),
+    );
+    return missingTokenIds;
   }
 }

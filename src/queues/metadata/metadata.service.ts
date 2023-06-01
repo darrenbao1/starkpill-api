@@ -15,8 +15,9 @@ export class MetadataService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async queueGetMissingMetadata() {
+    this.metadataQueue.clean(1000, 'failed');
     // find all the tokens that don't have metadata
     // and add them to the queue
     const presentTokenIdsPromise = this.prismaService.tokenMetadata
@@ -25,7 +26,7 @@ export class MetadataService {
 
     // This is a superset of presentTokenIds as it is the source of truth of all tokens
     const allTokenIdsPromise = this.tokenService
-      .findAllTokens({})
+      .findAllTokensForSourceOfTruth()
       .then((tokenIds) => tokenIds.map((token) => token.id));
 
     // Run them concurrently as they are independent
@@ -37,8 +38,8 @@ export class MetadataService {
     const missingTokenIds = allTokenIds.filter(
       (token) => !presentTokenIds.includes(token),
     );
-
-    missingTokenIds.forEach((id) => this.queueIndexMetadata(id));
+    const tokensToProcess = missingTokenIds.slice(0, 100);
+    tokensToProcess.forEach((id) => this.queueIndexMetadata(id));
   }
 
   async queueGetAllMetadata() {
@@ -50,6 +51,14 @@ export class MetadataService {
   }
 
   async queueIndexMetadata(id: number) {
+    //check if id already exist in tokenMetadata
+    const alreadyExists = await this.prismaService.tokenMetadata.findUnique({
+      where: { id },
+    });
+    if (alreadyExists) {
+      console.log('this tokenMetadata already exists in db');
+      return;
+    }
     console.log('queueIndexMetadata service');
     const waitingJobs = (await this.metadataQueue.getWaiting())
       .filter((job) => job.name === INDEX_METADATA)
@@ -85,6 +94,30 @@ export class MetadataService {
         mintPrice: metadata.mintPrice.toString(),
       },
     });
+  }
+
+  async getTokenIdsWithNoMetaData() {
+    // find all the tokens that don't have metadata
+    // and add them to the queue
+    const presentTokenIdsPromise = this.prismaService.tokenMetadata
+      .findMany()
+      .then((tokenIds) => tokenIds.map((token) => token.id));
+
+    // This is a superset of presentTokenIds as it is the source of truth of all tokens
+    const allTokenIdsPromise = this.tokenService
+      .findAllTokensForSourceOfTruth()
+      .then((tokenIds) => tokenIds.map((token) => token.id));
+
+    // Run them concurrently as they are independent
+    const [presentTokenIds, allTokenIds] = await Promise.all([
+      presentTokenIdsPromise,
+      allTokenIdsPromise,
+    ]);
+
+    const missingTokenIds = allTokenIds.filter(
+      (token) => !presentTokenIds.includes(token),
+    );
+    return missingTokenIds;
   }
 
   // ?: It is preferable to use this method instead of running one contract call at a time as this is more efficient

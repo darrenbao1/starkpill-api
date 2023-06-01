@@ -302,6 +302,7 @@ interface TrxnData {
   timestamp: Date;
   blockNumber: number;
   transactionHash: string;
+  eventIndex: number;
 }
 //3rd step add new event data type
 export interface TraitRedemptionData extends TrxnData {

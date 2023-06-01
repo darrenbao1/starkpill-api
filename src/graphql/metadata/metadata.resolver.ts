@@ -32,4 +32,9 @@ export class MetadataResolver {
 
     return lastIndexedBlock;
   }
+  @Query(() => [Int])
+  async getAllTokenIdsNotPresentInMetadata() {
+    const result = await this.metadataService.getTokenIdsWithNoMetaData();
+    return result;
+  }
 }
