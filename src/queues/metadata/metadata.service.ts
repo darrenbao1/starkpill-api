@@ -38,7 +38,7 @@ export class MetadataService {
     const missingTokenIds = allTokenIds.filter(
       (token) => !presentTokenIds.includes(token),
     );
-    const tokensToProcess = missingTokenIds.slice(0, 200);
+    const tokensToProcess = missingTokenIds.slice(0, 100);
     tokensToProcess.forEach((id) => this.queueIndexMetadata(id));
   }
 
