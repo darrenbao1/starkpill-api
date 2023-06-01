@@ -14,4 +14,6 @@ export const INDEX_BACKPACK = 'indexBackpack';
 export const JOB_SETTINGS = {
   attempts: 3,
   backoff: 1000,
+  removedOnFailed: true,
+  removeOnComplete: true,
 };

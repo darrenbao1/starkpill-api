@@ -34,7 +34,8 @@ model TokenMetadata {
 }
 
 model Event {
-  transactionHash String    @id
+  transactionHash String    
+  eventIndex Int 
   to              String // the address of the user, mint to or transfer to address, or the address changing attributes
   tokenId         Int
   blockNumber     Int
@@ -45,31 +46,39 @@ model Event {
   Mint            Mint?
   ChangeAttribute ChangeAttribute?
   Transfer        Transfer?
+
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 
 model Mint {
-  transactionHash String  @id
-  event           Event   @relation(fields: [transactionHash], references: [transactionHash])
+  transactionHash String  
+  eventIndex Int 
+  event           Event   @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
   mintPrice       Decimal @db.Decimal(50, 0)
   // these are the ids of the background and ingredient NFTs associated with this NFT
   background      Int
   ingredient      Int
+   @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 
 model ChangeAttribute {
-  transactionHash String @id
-  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
+  transactionHash String
+  eventIndex Int 
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
   // these are the ids of the background and ingredient NFTs associated with this NFT
   oldBackground   Int
   oldIngredient   Int
   newBackground   Int
   newIngredient   Int
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 
 model Transfer {
-  transactionHash String @id
-  event           Event  @relation(fields: [transactionHash], references: [transactionHash])
+  transactionHash String 
+  eventIndex Int
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
   from            String
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 
 
@@ -109,4 +118,8 @@ model TraitRedemption {
   tokenId Int
   to String
   @@id([l1_address, l1_tokenId], name: "l1_address_l1_tokenId")
+}
+
+model KnownTraits {
+  tokenId Int @id
 }

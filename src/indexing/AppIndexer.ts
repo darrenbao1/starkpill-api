@@ -48,15 +48,17 @@ export class AppIndexer {
   }
   handleData(block: starknet.Block): IndexBlockData[] {
     const blockNumber = block.header.blockNumber.toString();
-    console.log('Block Number: ' + blockNumber);
+
     const eventsArr: IndexBlockData[] = [];
-    let lastPrescriptionUpdatedEvent;
+    let eventIndex = 0;
     for (let { transaction, event } of block.events) {
       const hash = transaction?.meta?.hash;
       if (!event || !event.data || !hash) {
         continue;
       }
+      console.log('Block Number: ' + blockNumber);
       for (let eventKey of event.keys) {
+        eventIndex++;
         const blockNumber = Number(block.header.blockNumber.toString());
         const transactionHash = FieldElement.toHex(transaction.meta.hash);
         const timestamp = new Date(
@@ -81,6 +83,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.Transfer,
             data: {
+              eventIndex,
               ...decodeTransfer(event.data),
               ...commonData,
             } as TransferData,
@@ -93,13 +96,14 @@ export class AppIndexer {
           FieldElement.toHex(eventKey)
         ) {
           console.log('prescription updated event');
-          lastPrescriptionUpdatedEvent = {
+          eventsArr.push({
             eventType: EventName.Prescription_Updated,
             data: {
+              eventIndex,
               ...decodePrescriptionUpdated(event.data),
               ...commonData,
             } as PrescriptionUpdatedData,
-          } as IndexBlockData;
+          });
           continue;
         }
         //Scalar transfer event check
@@ -111,6 +115,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.SCALAR_TRANSFER,
             data: {
+              eventIndex,
               ...decodeScalarTransfer(event.data),
               ...commonData,
             } as ScalarTransferData,
@@ -125,6 +130,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.SCALAR_REMOVE,
             data: {
+              eventIndex,
               ...decodeScalarRemove(event.data),
               ...commonData,
             } as ScalarRemoveData,
@@ -140,6 +146,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PILL_FAME_UPDATED,
             data: {
+              eventIndex,
               ...decodeFameOrDefameUpdated(event.data),
               ...commonData,
             },
@@ -154,6 +161,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PILL_DEFAME_UPDATED,
             data: {
+              eventIndex,
               ...decodeFameOrDefameUpdated(event.data),
               ...commonData,
             },
@@ -168,6 +176,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PHARMACY_STOCK_UPDATED,
             data: {
+              eventIndex,
               tokenId: 0, //does not have token id as it's the pharmacy stock.
               ...decodePharmacyStockUpdate(event.data),
               ...commonData,
@@ -180,10 +189,11 @@ export class AppIndexer {
           FieldElement.toHex(eventKey)
         ) {
           console.log('PillVoteTimeStamp event');
-          console.log(decodePillVoteTimeStamp(event.data));
+
           eventsArr.push({
             eventType: EventName.PILL_VOTE_TIMESTAMP,
             data: {
+              eventIndex,
               ...decodePillVoteTimeStamp(event.data),
               ...commonData,
             },
@@ -200,6 +210,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.TRAIT_REDEMPTION,
             data: {
+              eventIndex,
               ...decodeTraitRedemption(event.data),
               ...commonData,
             },
@@ -211,6 +222,7 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.ATTRIBUTE_ADDED,
             data: {
+              eventIndex,
               ...decodeAttributeAdded(event.data),
               ...commonData,
             },
@@ -220,10 +232,11 @@ export class AppIndexer {
           FieldElement.toHex(eventKey)
         ) {
           console.log('TraittimeStamp event');
-          console.log(decodeTraitVoteTimeStamp(event.data));
+
           eventsArr.push({
             eventType: EventName.TRAIT_VOTE_TIME_STAMP,
             data: {
+              eventIndex,
               ...decodeTraitVoteTimeStamp(event.data),
               ...commonData,
             },
@@ -235,9 +248,6 @@ export class AppIndexer {
           console.log('unknown event');
         }
       }
-    }
-    if (lastPrescriptionUpdatedEvent) {
-      eventsArr.push(lastPrescriptionUpdatedEvent);
     }
     return eventsArr;
   }

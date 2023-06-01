@@ -8,6 +8,7 @@ import { TransactionModule } from './transaction/transaction.module';
 import { UserModule } from './user/user.module';
 import { MetadataModule } from './metadata/metadata.module';
 import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
+import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
     UserModule,
     MetadataModule,
     PharmacyDataModule,
+    BackpackMetadataModule,
   ],
   providers: [],
 })

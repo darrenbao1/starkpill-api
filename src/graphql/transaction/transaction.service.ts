@@ -10,7 +10,7 @@ export class TransactionService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findTransactionByHash(transactionHash: string) {
-    const trxn = await this.prismaService.event.findUnique({
+    const trxn = await this.prismaService.event.findMany({
       where: { transactionHash },
       include: {
         ChangeAttribute: true,
@@ -24,8 +24,8 @@ export class TransactionService {
         error: 'Invalid transaction hash',
       });
     }
-
-    return formatTransaction(trxn);
+    //map through trxn and format each and return
+    return trxn.map((trans) => formatTransaction(trans));
   }
 
   async findTransactionsByHash(transactionHashes: string[]) {

@@ -1,7 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class BackPackMetadata {
+export class BackPackMetadataWithEquipped {
   @Field(() => Int)
   id: number;
 
@@ -16,4 +16,7 @@ export class BackPackMetadata {
 
   @Field(() => String)
   itemName: string;
+
+  @Field(() => Int)
+  equippedById: number;
 }

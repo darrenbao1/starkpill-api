@@ -59,7 +59,7 @@ export class TokenService {
     const transactions = await this.prismaService.event.findMany({
       include: { ChangeAttribute: true, Mint: true, Transfer: true },
       where: { tokenId: tokenId },
-      orderBy: { blockNumber: 'desc' },
+      orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });
 
     return this.getTokenDetails(transactions, tokenId);
@@ -73,7 +73,7 @@ export class TokenService {
           in: tokenIds,
         },
       },
-      orderBy: { blockNumber: 'desc' },
+      orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });
 
     // each sub array contains all transactions for a token, sorted by block number  in descending order
@@ -104,6 +104,15 @@ export class TokenService {
   //   return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
   // }
   //new find all tokens function using darren method
+  async findAllTokensForSourceOfTruth() {
+    const tokenIds = await this.prismaService.mint.findMany({
+      include: {
+        event: true,
+      },
+    });
+    return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
+  }
+
   async findAllTokens(paginationArgs: PaginationArgs) {
     const tokenIds = await this.prismaService.tokenMetadata.findMany({
       take: paginationArgs.first,
@@ -177,6 +186,13 @@ export class TokenService {
   }
 
   //back pack functions
+  async findBackPackTokenById(tokenId: number) {
+    const backpackToken = await this.prismaService.backpackMetadata.findFirst({
+      where: { id: tokenId },
+    });
+    return backpackToken;
+  }
+
   async findBackPackTokensById(tokenIds: number[]) {
     const backpackTokens = await this.prismaService.backpackMetadata.findMany({
       where: {

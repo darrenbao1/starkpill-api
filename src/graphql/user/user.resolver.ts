@@ -11,6 +11,7 @@ import { TokenService } from '../token/token.service';
 import { Transaction } from '../transaction/model/transaction.model';
 import { User } from './models/user.model';
 import { UserService } from './user.service';
+import { BackPackMetadataWithEquipped } from '../backpackMetadata/model/backpackMetadataWithEquipped.model';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -22,6 +23,39 @@ export class UserResolver {
   @Query(() => User)
   user(@Args('address', { type: () => String }) address: string) {
     return { address };
+  }
+  @Query(() => [BackPackMetadataWithEquipped])
+  async getEquippedIngredients(
+    @Args('address', { type: () => String }) address: string,
+  ) {
+    const tokensIdsOwned = await this.userService.findTokenIdsOwnedByUser(
+      address,
+    );
+    const pillsOwnedByUser = await this.tokenService.findTokensById(
+      tokensIdsOwned,
+    );
+    let equippedIngredients: BackPackMetadataWithEquipped[] = [];
+
+    await Promise.all(
+      pillsOwnedByUser.map(async (pill) => {
+        if (pill.ingredient != null && pill.ingredient != 0) {
+          const metadata = await this.tokenService.findBackPackTokenById(
+            pill.ingredient,
+          );
+          const resultObject: BackPackMetadataWithEquipped = {
+            id: metadata.id,
+            description: metadata.description,
+            imageUrl: metadata.imageUrl,
+            isIngredient: metadata.isIngredient,
+            itemName: metadata.itemName,
+            equippedById: pill.id,
+          };
+
+          equippedIngredients.push(resultObject);
+        }
+      }),
+    );
+    return equippedIngredients;
   }
 
   @ResolveField(() => Int)

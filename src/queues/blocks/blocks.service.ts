@@ -35,6 +35,7 @@ export class BlocksService {
   ) {}
 
   async handlePrescriptionUpdated({
+    eventIndex,
     tokenId,
     transactionHash,
     blockNumber,
@@ -50,7 +51,7 @@ export class BlocksService {
     // if this tokenId has been minted, then it's a change of attributes, otherwise it's a mint
     if (
       await this.prismaService.event.findFirst({
-        where: { transactionHash },
+        where: { transactionHash, eventIndex },
       })
     ) {
       console.log(
@@ -69,6 +70,7 @@ export class BlocksService {
       // change of attributes
       const result = await this.prismaService.event.create({
         data: {
+          eventIndex,
           to,
           transactionHash,
           blockNumber,
@@ -90,11 +92,11 @@ export class BlocksService {
       });
 
       console.log('Changing attributes');
-      console.log(result);
     } else {
       // mint
       const result = await this.prismaService.event.create({
         data: {
+          eventIndex,
           to,
           transactionHash,
           blockNumber,
@@ -113,15 +115,23 @@ export class BlocksService {
           Mint: true,
         },
       });
-
-      console.log('minting price');
-      console.log(result.Mint.mintPrice.toString());
-
+      //add this to backpack meta data queue. It might fail.
+      //therefore I created another table called KnownTraits where it will contain all the ids of every trait ever created.
+      if (newBG != 0) {
+        await this.prismaService.knownTraits.create({
+          data: { tokenId: newBG },
+        });
+        this.backpackMetadataService.queueIndexMetadata(newBG);
+      }
+      if (newIng != 0) {
+        await this.prismaService.knownTraits.create({
+          data: { tokenId: newIng },
+        });
+        this.backpackMetadataService.queueIndexMetadata(newIng);
+      }
       console.log('Minting');
-      console.log(result);
     }
 
-    console.log('changing tokenId', tokenId);
     // Update the token metadata table, don't need to await as it's a side effect
     this.metadataService.queueIndexMetadata(tokenId);
   }
@@ -191,10 +201,21 @@ export class BlocksService {
     });
 
     console.log('transfer');
-    console.log(result);
-    if (checkIfIsTraitOrPill(eventData.tokenId)) {
+
+    const isPill = await this.checkIfIsPill(eventData.tokenId);
+
+    if (!isPill) {
       await this.handleTransferIfIsTraitOrPill({ from, ...eventData });
     }
+  }
+  async checkIfIsPill(tokenId: number) {
+    //Get all events from prisma that has the tokenId
+    const result = await this.prismaService.event.findMany({
+      where: { tokenId },
+    });
+    // Check if there is a mint event for the token ID if no, means it is not a pill.
+    const hasMintEvent = result.some((event) => event.eventType === 'MINT');
+    return hasMintEvent;
   }
   async handleTransferIfIsTraitOrPill({ from, ...eventData }: TransferData) {
     //Check if the eventData.tokenId exist in the backpack, if exist, then edit the owner address to eventData.to
@@ -208,7 +229,7 @@ export class BlocksService {
         where: { id: eventData.tokenId },
         data: { ownerAddress: eventData.to },
       });
-      console.log(result);
+
       //else create a new record for the new trait
     } else {
       console.log('This is receiving a trait from contract.');
@@ -218,7 +239,6 @@ export class BlocksService {
           ownerAddress: eventData.to,
         },
       });
-      console.log(result);
     }
   }
 
@@ -236,8 +256,10 @@ export class BlocksService {
       },
     });
     console.log('Scalar Remove');
-    console.log(result);
-    this.backpackMetadataService.queueIndexMetadata(tokenId);
+
+    //No longer need this because when user mint a pill, pill will be added to backpack and metadata will be generated already.
+    //Since trait can never change their metadata, no need to queue metadata generation.
+    // this.backpackMetadataService.queueIndexMetadata(tokenId);
   }
   async handleScalarTransfer({ tokenId, ...eventData }: ScalarTransferData) {
     if (
@@ -247,7 +269,7 @@ export class BlocksService {
       const result = await this.prismaService.backpack.delete({
         where: { id: tokenId },
       });
-      console.log(result);
+
       return;
     } else {
       console.log('irrelevant ScalarTransfer');
@@ -329,7 +351,7 @@ export class BlocksService {
         },
       });
       console.log('Trait Claimed!');
-      console.log(result);
+
       this.backpackMetadataService.queueIndexMetadata(tokenId);
     }
   }

@@ -10,7 +10,7 @@ export class BackpackMetadataResolver {
   ) {}
 
   @Mutation(() => String)
-  async refreshMetadataForOneToken(
+  async refreshBackPackMetadataForOneToken(
     @Args('tokenId', { type: () => Int }) tokenId: number,
   ) {
     await this.backpackMetadataService.queueIndexMetadata(tokenId);
@@ -18,18 +18,18 @@ export class BackpackMetadataResolver {
   }
 
   @Mutation(() => String)
-  async refreshMetadataForAllTokens() {
+  async refreshBackPackMetadataForAllTokens() {
     await this.backpackMetadataService.queueGetAllMetadata();
     return 'Queued metadata refresh';
   }
-
-  @Query(() => Int)
-  async lastIndexedBlock() {
-    const { lastIndexedBlock } = await this.prismaService.metadata.findUnique({
-      where: { id: 1 },
-      select: { lastIndexedBlock: true },
-    });
-
-    return lastIndexedBlock;
+  @Mutation(() => String)
+  async refreshBackPackMetadataForMissingTokens() {
+    await this.backpackMetadataService.queueGetMissingMetadata();
+    return 'Queued metadata refresh';
+  }
+  @Query(() => [Int])
+  async tokenIdsWithMissingMetadata() {
+    const result = await this.backpackMetadataService.getMissingMetadata();
+    return result;
   }
 }

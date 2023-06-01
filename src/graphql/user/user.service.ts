@@ -29,9 +29,7 @@ export class UserService {
           eventType: 'CHANGE_ATTRIBUTE',
         },
       },
-      orderBy: {
-        blockNumber: 'desc',
-      },
+      orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });
 
     const tokensInteractedWithSet: Set<number> = new Set<number>();
