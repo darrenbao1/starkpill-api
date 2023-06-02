@@ -342,11 +342,18 @@ export class BlocksService {
       //Create a new recored in BackPack. with tokenId and to
       //Should do a check if tokenId already exists in BackPack
       if (
-        await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
+        await this.prismaService.knownTraits.findFirst({
+          where: { tokenId: tokenId },
+        })
       ) {
         console.log('this trait has already been claimed!');
         return;
       }
+      const result2 = await this.prismaService.knownTraits.create({
+        data: {
+          tokenId: tokenId,
+        },
+      });
       const result = await this.prismaService.backpack.create({
         data: {
           id: tokenId,
