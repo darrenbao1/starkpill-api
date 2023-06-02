@@ -73,6 +73,7 @@ export class TransactionService {
       where: {
         transactionHash: { equals: transaction.hash, mode: 'insensitive' },
         eventType: transactionType,
+        eventIndex: transaction.eventIndex,
       },
       include: {
         Transfer: transactionType === TransactionType.TRANSFER,

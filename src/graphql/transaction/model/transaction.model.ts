@@ -31,4 +31,7 @@ export class Transaction {
 
   @Field(() => ChangeAttribute, { nullable: true })
   changeAttribute: ChangeAttribute;
+
+  @Field(() => Int)
+  eventIndex: number;
 }

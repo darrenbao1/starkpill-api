@@ -180,7 +180,10 @@ export class BlocksService {
   async handleTransfer({ from, ...eventData }: TransferData) {
     if (
       await this.prismaService.event.findFirst({
-        where: { transactionHash: eventData.transactionHash },
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
       })
     ) {
       console.log('this transfer transaction has already been indexed');

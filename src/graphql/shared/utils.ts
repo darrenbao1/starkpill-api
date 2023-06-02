@@ -7,5 +7,6 @@ export function formatTransaction(trxn: Event) {
     timestamp: trxn.timestamp,
     transactionType: trxn.eventType,
     token: { id: trxn.tokenId },
+    eventIndex: trxn.eventIndex,
   };
 }
