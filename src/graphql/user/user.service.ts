@@ -47,11 +47,25 @@ export class UserService {
       // find gets the first trxn in the array, so it's the most recent mint/transfer trxn
       const transaction = transactions.find((trxn) => trxn.tokenId === tokenId);
 
-      // Check if there is a mint event for the token ID if no, means it is not a pill.
-      const hasMintEvent = transactions.some(
-        (trxn) => trxn.eventType === 'MINT' && trxn.tokenId === tokenId,
-      );
-      // If the last relevant trxn is a mint, add it. This means that the token was not transferred after minting
+      // Check if there is a mint event for the token ID if no, means it is not a pill. this has mint has issue. need to fix
+      const hasMintEvent = await this.prismaService.event.findFirst({
+        where: {
+          AND: [
+            {
+              tokenId: {
+                equals: tokenId,
+              },
+            },
+            //event type is MINT
+            {
+              eventType: {
+                equals: 'MINT',
+              },
+            },
+          ],
+        },
+      });
+
       if (
         hasMintEvent &&
         transaction.eventType === 'MINT' &&
