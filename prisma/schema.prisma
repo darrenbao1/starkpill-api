@@ -117,7 +117,7 @@ model TraitRedemption {
   l1_tokenId Int
   tokenId Int
   to String
-  @@id([l1_address, l1_tokenId], name: "l1_address_l1_tokenId")
+  @@id([l1_address, l1_tokenId,tokenId], name: "l1_address_l1_tokenId_tokenId")
 }
 
 model KnownTraits {
