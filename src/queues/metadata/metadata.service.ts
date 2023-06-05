@@ -51,14 +51,6 @@ export class MetadataService {
   }
 
   async queueIndexMetadata(id: number) {
-    //check if id already exist in tokenMetadata
-    const alreadyExists = await this.prismaService.tokenMetadata.findUnique({
-      where: { id },
-    });
-    if (alreadyExists) {
-      console.log('this tokenMetadata already exists in db');
-      return;
-    }
     console.log('queueIndexMetadata service');
     const waitingJobs = (await this.metadataQueue.getWaiting())
       .filter((job) => job.name === INDEX_METADATA)
