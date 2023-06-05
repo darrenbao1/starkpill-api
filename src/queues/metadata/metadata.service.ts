@@ -6,6 +6,7 @@ import { getMetadataFromContract } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TokenService } from 'src/graphql/token/token.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { type } from 'os';
 
 @Injectable()
 export class MetadataService {
@@ -110,6 +111,41 @@ export class MetadataService {
       (token) => !presentTokenIds.includes(token),
     );
     return missingTokenIds;
+  }
+
+  async getTokensIdsThatImageIsWrong() {
+    const tokensIdsThatRequireRefresh: number[] = [];
+    const allTokens = await this.tokenService.findAllTokensForSourceOfTruth();
+    for (const token of allTokens) {
+      const metadata = await this.prismaService.tokenMetadata.findUnique({
+        where: { id: token.id },
+      });
+      //Get the actual Background Name
+      let bgName = '';
+      if (token.background == 0) {
+        bgName = 'White';
+      } else {
+        const bg = await this.prismaService.backpackMetadata.findUnique({
+          where: { id: token.background },
+        });
+        bgName = bg.itemName;
+      }
+      //Get the actual Ingredient Name
+      let ingName = '';
+      if (token.ingredient == 0) {
+        ingName = 'Null';
+      } else {
+        const ing = await this.prismaService.backpackMetadata.findUnique({
+          where: { id: token.ingredient },
+        });
+        console.log('ing', ing);
+        ingName = ing.itemName;
+      }
+      if (metadata.background !== bgName || metadata.ingredient !== ingName) {
+        tokensIdsThatRequireRefresh.push(token.id);
+      }
+    }
+    return tokensIdsThatRequireRefresh;
   }
 
   // ?: It is preferable to use this method instead of running one contract call at a time as this is more efficient

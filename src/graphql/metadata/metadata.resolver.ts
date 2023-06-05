@@ -37,4 +37,9 @@ export class MetadataResolver {
     const result = await this.metadataService.getTokenIdsWithNoMetaData();
     return result;
   }
+  @Query(() => [Int])
+  async getTokenIdsThatImageIsWrong() {
+    const result = await this.metadataService.getTokensIdsThatImageIsWrong();
+    return result;
+  }
 }
