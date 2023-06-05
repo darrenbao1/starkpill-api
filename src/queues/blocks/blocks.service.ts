@@ -323,6 +323,7 @@ export class BlocksService {
         where: {
           l1_address: eventData.l1_address,
           l1_tokenId: eventData.l1_tokenId,
+          tokenId: tokenId,
         },
       });
     if (existingRedemption) {
