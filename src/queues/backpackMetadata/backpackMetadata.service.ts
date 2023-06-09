@@ -67,7 +67,6 @@ export class BackpackMetadataService {
   // If an error is thrown, the job will be retried 3 times in total, then it will be moved to the failed queue
   async indexMetadata(id: number) {
     const backpackMetadata = await getBackpackFromContract(id);
-    console.log(backpackMetadata, id);
     await this.prismaService.backpackMetadata.upsert({
       where: { id },
       create: backpackMetadata,

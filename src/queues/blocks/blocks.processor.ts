@@ -29,9 +29,9 @@ export class BlocksProcessor {
     } else if (eventType === EventName.SCALAR_REMOVE) {
       await this.blocksService.handleScalarRemove(data);
     } else if (eventType === EventName.PILL_FAME_UPDATED) {
-      await this.blocksService.handleFameOrDefame(data);
+      await this.blocksService.handleFame(data);
     } else if (eventType === EventName.PILL_DEFAME_UPDATED) {
-      await this.blocksService.handleFameOrDefame(data);
+      await this.blocksService.handleDefame(data);
     } else if (eventType === EventName.PHARMACY_STOCK_UPDATED) {
       await this.blocksService.handlePharmacyStockUpdated(data);
     } else if (eventType === EventName.PILL_VOTE_TIMESTAMP) {

@@ -1,4 +1,11 @@
-import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
+import {
+  ChangeAttribute,
+  Mint,
+  Transfer,
+  Event,
+  Fame,
+  Defame,
+} from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
@@ -13,11 +20,23 @@ export class TokenService {
       Mint: Mint;
       ChangeAttribute: ChangeAttribute;
       Transfer: Transfer;
+      Fame: Fame;
+      Defame: Defame;
     })[],
     id: number,
   ) {
     try {
-      const owner = rawTrxns[0].to; // get the first trxn as it's sorted in descending order
+      //remove all trxn that has transactionType of Fame and Defame
+      const rawTrxnsWithoutFameEvents = rawTrxns.filter(
+        (trxn) => trxn.eventType !== 'FAME' && trxn.eventType !== 'DEFAME',
+      );
+      const fameEvents = rawTrxns.filter((trxn) => trxn.eventType === 'FAME');
+      const defameEvents = rawTrxns.filter(
+        (trxn) => trxn.eventType === 'DEFAME',
+      );
+      const fame = fameEvents[0].Fame.amount;
+      const defame = defameEvents[0].Defame.amount;
+      const owner = rawTrxnsWithoutFameEvents[0].to; // get the first trxn as it's sorted in descending order
 
       const latestChangeAttributeOrMint = rawTrxns.find(
         (trxn) =>
@@ -41,6 +60,8 @@ export class TokenService {
         transactions,
         background,
         ingredient,
+        fame,
+        defame,
       };
     } catch (error) {
       const tokenId = rawTrxns[0]?.tokenId || null;
@@ -51,13 +72,21 @@ export class TokenService {
         transactions,
         background: null,
         ingredient: null,
+        fame: null,
+        defame: null,
       };
     }
   }
 
   async findTokenById(tokenId: number) {
     const transactions = await this.prismaService.event.findMany({
-      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      include: {
+        ChangeAttribute: true,
+        Mint: true,
+        Transfer: true,
+        Fame: true,
+        Defame: true,
+      },
       where: { tokenId: tokenId },
       orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });
@@ -67,7 +96,13 @@ export class TokenService {
 
   async findTokensById(tokenIds: number[]) {
     const transactions = await this.prismaService.event.findMany({
-      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      include: {
+        ChangeAttribute: true,
+        Mint: true,
+        Transfer: true,
+        Fame: true,
+        Defame: true,
+      },
       where: {
         tokenId: {
           in: tokenIds,

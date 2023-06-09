@@ -65,7 +65,6 @@ export class MetadataService {
   // If an error is thrown, the job will be retried 3 times in total, then it will be moved to the failed queue
   async indexMetadata(id: number) {
     let metadata = await getMetadataFromContract(id);
-    console.log(metadata, id);
     await this.prismaService.tokenMetadata.upsert({
       where: { id },
       create: {

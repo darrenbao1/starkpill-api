@@ -154,10 +154,17 @@ export const decodeScalarRemove = (eventData: starknet.IFieldElement[]) => {
 export const decodeFameOrDefameUpdated = (
   eventData: starknet.IFieldElement[],
 ) => {
+  const voter = FieldElement.toHex(eventData[0]);
   const tokenId =
     FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  const amount = FieldElement.toHex(eventData[3]);
+  console.log('hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+  console.log(amount);
+  console.log(parseInt(amount, 16));
   return {
+    voter: convertToStandardWalletAddress(voter),
     tokenId: Number(tokenId.toString()),
+    amount: parseInt(amount, 16),
   };
 };
 export const decodePharmacyStockUpdate = (
@@ -338,6 +345,8 @@ export interface ScalarRemoveData extends TrxnData {
 }
 export interface PillFameData extends TrxnData {
   tokenId: number;
+  voter: string;
+  amount: number;
 }
 export interface PharmacyStockData extends TrxnData {
   typeIndex: number;

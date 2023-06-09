@@ -31,6 +31,18 @@ type Transfer {
   to: User!
 }
 
+type Fame {
+  voter: String!
+  amount: Int!
+  incrementBy: Int!
+}
+
+type Defame {
+  voter: String!
+  amount: Int!
+  incrementBy: Int!
+}
+
 type Transaction {
   hash: String!
   token: Token!
@@ -40,6 +52,10 @@ type Transaction {
   mint: Mint
   transfer: Transfer
   changeAttribute: ChangeAttribute
+  fame: Fame
+  defame: Defame
+  fameAmount: Int!
+  defameAmount: Int!
   eventIndex: Int!
 }
 
@@ -53,6 +69,8 @@ enum TransactionType {
   MINT
   TRANSFER
   CHANGE_ATTRIBUTE
+  FAME
+  DEFAME
 }
 
 type User {
@@ -70,6 +88,8 @@ type Token {
   background: Int!
   ingredient: Int!
   metadata: Metadata!
+  fame: Int!
+  defame: Int!
 }
 
 type BackPackMetadata {

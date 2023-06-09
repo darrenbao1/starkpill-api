@@ -64,7 +64,12 @@ export class AppIndexer {
         const timestamp = new Date(
           Number(block.header.timestamp.seconds.toString()) * 1000,
         );
-        const commonData = { timestamp, blockNumber, transactionHash };
+        const commonData = {
+          timestamp,
+          blockNumber,
+          transactionHash,
+          eventIndex,
+        };
         //Transfer event check
         if (FieldElement.toHex(TRANSFER_KEY) === FieldElement.toHex(eventKey)) {
           // ignore if transferred from or to NFT contract or a null address
@@ -83,7 +88,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.Transfer,
             data: {
-              eventIndex,
               ...decodeTransfer(event.data),
               ...commonData,
             } as TransferData,
@@ -99,7 +103,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.Prescription_Updated,
             data: {
-              eventIndex,
               ...decodePrescriptionUpdated(event.data),
               ...commonData,
             } as PrescriptionUpdatedData,
@@ -115,7 +118,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.SCALAR_TRANSFER,
             data: {
-              eventIndex,
               ...decodeScalarTransfer(event.data),
               ...commonData,
             } as ScalarTransferData,
@@ -130,7 +132,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.SCALAR_REMOVE,
             data: {
-              eventIndex,
               ...decodeScalarRemove(event.data),
               ...commonData,
             } as ScalarRemoveData,
@@ -146,7 +147,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PILL_FAME_UPDATED,
             data: {
-              eventIndex,
               ...decodeFameOrDefameUpdated(event.data),
               ...commonData,
             },
@@ -161,7 +161,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PILL_DEFAME_UPDATED,
             data: {
-              eventIndex,
               ...decodeFameOrDefameUpdated(event.data),
               ...commonData,
             },
@@ -176,7 +175,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PHARMACY_STOCK_UPDATED,
             data: {
-              eventIndex,
               tokenId: 0, //does not have token id as it's the pharmacy stock.
               ...decodePharmacyStockUpdate(event.data),
               ...commonData,
@@ -193,7 +191,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.PILL_VOTE_TIMESTAMP,
             data: {
-              eventIndex,
               ...decodePillVoteTimeStamp(event.data),
               ...commonData,
             },
@@ -210,7 +207,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.TRAIT_REDEMPTION,
             data: {
-              eventIndex,
               ...decodeTraitRedemption(event.data),
               ...commonData,
             },
@@ -222,7 +218,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.ATTRIBUTE_ADDED,
             data: {
-              eventIndex,
               ...decodeAttributeAdded(event.data),
               ...commonData,
             },
@@ -236,7 +231,6 @@ export class AppIndexer {
           eventsArr.push({
             eventType: EventName.TRAIT_VOTE_TIME_STAMP,
             data: {
-              eventIndex,
               ...decodeTraitVoteTimeStamp(event.data),
               ...commonData,
             },
