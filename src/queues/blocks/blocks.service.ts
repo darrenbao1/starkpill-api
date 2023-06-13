@@ -315,7 +315,37 @@ export class BlocksService {
     }
   }
 
-  async handleScalarRemove({ tokenId, to, ...eventData }: ScalarRemoveData) {
+  async handleScalarRemove({
+    fromPillId,
+    tokenId,
+    to,
+    ...eventData
+  }: ScalarRemoveData) {
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('this ScalarRemove transaction has already been indexed');
+      return;
+    }
+    const result2 = await this.prismaService.event.create({
+      data: {
+        ...eventData,
+        tokenId,
+        to,
+        ScalarRemove: {
+          create: { from: fromPillId },
+        },
+        eventType: EventType.SCALAR_REMOVE,
+      },
+      include: {
+        ScalarRemove: true,
+      },
+    });
     if (
       await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
     ) {
@@ -334,7 +364,44 @@ export class BlocksService {
     //Since trait can never change their metadata, no need to queue metadata generation.
     // this.backpackMetadataService.queueIndexMetadata(tokenId);
   }
-  async handleScalarTransfer({ tokenId, ...eventData }: ScalarTransferData) {
+  async handleScalarTransfer({
+    tokenId,
+    toPillId,
+    ...eventData
+  }: ScalarTransferData) {
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('this ScalarTransfer transaction has already been indexed');
+      return;
+    }
+    try {
+      const result2 = await this.prismaService.event.create({
+        data: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+          blockNumber: eventData.blockNumber,
+          timestamp: eventData.timestamp,
+          tokenId,
+          to: toPillId.toString(),
+          ScalarTransfer: {
+            create: { from: eventData.from },
+          },
+          eventType: EventType.SCALAR_TRANSFER,
+        },
+        include: {
+          ScalarTransfer: true,
+        },
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     if (
       await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
     ) {

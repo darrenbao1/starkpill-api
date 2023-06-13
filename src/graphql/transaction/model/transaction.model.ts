@@ -6,6 +6,8 @@ import { Mint } from './mint.model';
 import { Transfer } from './transfer.model';
 import { Fame } from './fame.model';
 import { Defame } from './defame.model';
+import { ScalarTransfer } from './scalarTransfer.model';
+import { ScalarRemove } from './scalarRemove.model';
 
 @ObjectType()
 export class Transaction {
@@ -39,6 +41,12 @@ export class Transaction {
 
   @Field(() => Defame, { nullable: true })
   defame: Defame;
+
+  @Field(() => ScalarTransfer, { nullable: true })
+  scalarTransfer: ScalarTransfer;
+
+  @Field(() => ScalarRemove, { nullable: true })
+  scalarRemove: ScalarRemove;
 
   @Field(() => Int)
   fameAmount: number;

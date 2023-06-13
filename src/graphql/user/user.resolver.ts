@@ -12,12 +12,15 @@ import { Transaction } from '../transaction/model/transaction.model';
 import { User } from './models/user.model';
 import { UserService } from './user.service';
 import { BackPackMetadataWithEquipped } from '../backpackMetadata/model/backpackMetadataWithEquipped.model';
+import { TraitToken } from '../traitToken/model/traitToken.model';
+import { TraitTokenService } from '../traitToken/traitToken.service';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly traitTokenService: TraitTokenService,
   ) {}
 
   @Query(() => User)
@@ -57,6 +60,39 @@ export class UserResolver {
     );
     return equippedIngredients;
   }
+  @Query(() => [BackPackMetadataWithEquipped])
+  async getEquippedBackgrounds(
+    @Args('address', { type: () => String }) address: string,
+  ) {
+    const tokensIdsOwned = await this.userService.findTokenIdsOwnedByUser(
+      address,
+    );
+    const pillsOwnedByUser = await this.tokenService.findTokensById(
+      tokensIdsOwned,
+    );
+    let equipppedBackgrounds: BackPackMetadataWithEquipped[] = [];
+
+    await Promise.all(
+      pillsOwnedByUser.map(async (pill) => {
+        if (pill.background != null && pill.background != 0) {
+          const metadata = await this.tokenService.findBackPackTokenById(
+            pill.background,
+          );
+          const resultObject: BackPackMetadataWithEquipped = {
+            id: metadata.id,
+            description: metadata.description,
+            imageUrl: metadata.imageUrl,
+            isIngredient: metadata.isIngredient,
+            itemName: metadata.itemName,
+            equippedById: pill.id,
+          };
+
+          equipppedBackgrounds.push(resultObject);
+        }
+      }),
+    );
+    return equipppedBackgrounds;
+  }
 
   @ResolveField(() => Int)
   async numberOfTokensOwned(@Parent() user: User) {
@@ -85,5 +121,18 @@ export class UserResolver {
     );
     const votingPower = await this.tokenService.getVotingPower(tokensIdsOwned);
     return votingPower;
+  }
+
+  @ResolveField(() => [TraitToken])
+  async backpackTokens(@Parent() user: User) {
+    return await this.traitTokenService.findTraitTokensByOwner(user.address);
+  }
+
+  @ResolveField(() => [TraitToken])
+  async equippedTraitTokens(@Parent() user: User) {
+    //TODO
+    return await this.traitTokenService.findEquippedTraitTokensByOwner(
+      user.address,
+    );
   }
 }

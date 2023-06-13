@@ -43,6 +43,16 @@ type Defame {
   incrementBy: Int!
 }
 
+type ScalarTransfer {
+  from: String!
+  to: Int!
+}
+
+type ScalarRemove {
+  from: Int!
+  to: String!
+}
+
 type Transaction {
   hash: String!
   token: Token!
@@ -54,6 +64,8 @@ type Transaction {
   changeAttribute: ChangeAttribute
   fame: Fame
   defame: Defame
+  scalarTransfer: ScalarTransfer
+  scalarRemove: ScalarRemove
   fameAmount: Int!
   defameAmount: Int!
   eventIndex: Int!
@@ -71,6 +83,24 @@ enum TransactionType {
   CHANGE_ATTRIBUTE
   FAME
   DEFAME
+  SCALAR_TRANSFER
+  SCALAR_REMOVE
+}
+
+type BackPackMetadataWithEquipped {
+  id: Int!
+  description: String!
+  imageUrl: String!
+  isIngredient: Boolean!
+  itemName: String!
+  equippedById: Int!
+}
+
+type TraitToken {
+  traitTokenid: Int!
+  owner: User!
+  traitMetadata: BackPackMetadataWithEquipped!
+  transactions: [Transaction!]!
 }
 
 type User {
@@ -78,6 +108,8 @@ type User {
   tokens: [Token!]!
   numberOfTokensOwned: Int!
   transactions: [Transaction!]!
+  backpackTokens: [TraitToken!]!
+  equippedTraitTokens: [TraitToken!]!
   getVotingPower: Int!
 }
 
@@ -100,15 +132,6 @@ type BackPackMetadata {
   itemName: String!
 }
 
-type BackPackMetadataWithEquipped {
-  id: Int!
-  description: String!
-  imageUrl: String!
-  isIngredient: Boolean!
-  itemName: String!
-  equippedById: Int!
-}
-
 type PharmacyData {
   typeIndex: Float!
   index: Float!
@@ -129,8 +152,11 @@ type Query {
   transaction(transactionHash: String!): Transaction!
   transactions(transactionHashes: [String!]!): [Transaction!]!
   allTransactions(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC): [Transaction!]!
+  traitToken(traitTokenId: Int!): TraitToken!
+  traitTokens(traitTokenIds: [Int!]!): [TraitToken!]!
   user(address: String!): User!
   getEquippedIngredients(address: String!): [BackPackMetadataWithEquipped!]!
+  getEquippedBackgrounds(address: String!): [BackPackMetadataWithEquipped!]!
   lastIndexedBlock: Int!
   getAllTokenIdsNotPresentInMetadata: [Int!]!
   getTokenIdsThatImageIsWrong: [Int!]!

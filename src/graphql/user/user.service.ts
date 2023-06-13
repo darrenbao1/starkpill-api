@@ -5,7 +5,6 @@ import { formatTransaction } from '../shared/utils';
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
-
   async findTokenIdsOwnedByUser(address: string): Promise<number[]> {
     const transactions = await this.prismaService.event.findMany({
       where: {
@@ -25,9 +24,7 @@ export class UserService {
             },
           },
         ],
-        NOT: {
-          eventType: 'CHANGE_ATTRIBUTE',
-        },
+        eventType: { in: ['MINT', 'TRANSFER'] },
       },
       orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });

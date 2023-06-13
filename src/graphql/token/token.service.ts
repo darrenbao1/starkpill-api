@@ -34,15 +34,21 @@ export class TokenService {
       const defameEvents = rawTrxns.filter(
         (trxn) => trxn.eventType === 'DEFAME',
       );
-      const fame = fameEvents[0].Fame.amount;
-      const defame = defameEvents[0].Defame.amount;
+      let fame = 0;
+      //check if there is any Fame or Defame events
+      if (fameEvents.length != 0) {
+        fame = fameEvents[0].Fame.amount;
+      }
+      let defame = 0;
+      if (defameEvents.length != 0) {
+        defame = defameEvents[0].Defame.amount;
+      }
       const owner = rawTrxnsWithoutFameEvents[0].to; // get the first trxn as it's sorted in descending order
 
       const latestChangeAttributeOrMint = rawTrxns.find(
         (trxn) =>
           trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
       );
-
       const background =
         latestChangeAttributeOrMint.eventType === 'MINT'
           ? latestChangeAttributeOrMint.Mint.background
@@ -64,6 +70,7 @@ export class TokenService {
         defame,
       };
     } catch (error) {
+      console.log(error);
       const tokenId = rawTrxns[0]?.tokenId || null;
       const transactions = rawTrxns.map(formatTransaction);
       return {
@@ -120,25 +127,6 @@ export class TokenService {
       this.getTokenDetails(trxns, trxns[0].tokenId),
     );
   }
-  // Find all tokens that have been minted (roy's method)
-  // async findAllTokens(paginationArgs: PaginationArgs) {
-  //   const tokenIds = await this.prismaService.mint.findMany({
-  //     take: paginationArgs.first,
-  //     skip: paginationArgs.skip,
-  //     include: {
-  //       event: true,
-  //     },
-  //     orderBy: [{
-  //       mintPrice: 'desc'
-  //     },{
-  //       event:
-  //       {tokenId: "asc"}
-  //     }]
-  //   });
-
-  //   return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
-  // }
-  //new find all tokens function using darren method
   async findAllTokensForSourceOfTruth() {
     const tokenIds = await this.prismaService.mint.findMany({
       include: {

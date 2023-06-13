@@ -12,6 +12,8 @@ import { Transfer } from './model/transfer.model';
 import { TransactionService } from './transaction.service';
 import { Fame } from './model/fame.model';
 import { Defame } from './model/defame.model';
+import { ScalarTransfer } from './model/scalarTransfer.model';
+import { ScalarRemove } from './model/scalarRemove.model';
 
 @Resolver(() => Transaction)
 export class TransactionResolver {
@@ -79,6 +81,22 @@ export class TransactionResolver {
     return this.transactionService.findSpecificTransactions(
       transaction,
       TransactionType.DEFAME,
+    );
+  }
+
+  @ResolveField(() => ScalarTransfer)
+  async scalarTransfer(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.SCALAR_TRANSFER,
+    );
+  }
+
+  @ResolveField(() => ScalarRemove)
+  async scalarRemove(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.SCALAR_REMOVE,
     );
   }
 

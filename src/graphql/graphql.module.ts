@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { MetadataModule } from './metadata/metadata.module';
 import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
 import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.module';
+import { TraitTokenModule } from './traitToken/traitToken.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.modu
     RootModule,
     TokenModule,
     TransactionModule,
+    TraitTokenModule,
     UserModule,
     MetadataModule,
     PharmacyDataModule,
