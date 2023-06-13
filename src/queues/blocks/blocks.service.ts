@@ -135,8 +135,78 @@ export class BlocksService {
     // Update the token metadata table, don't need to await as it's a side effect
     this.metadataService.queueIndexMetadata(tokenId);
   }
-  async handleFameOrDefame({ tokenId, ...eventData }: PillFameData) {
-    console.log("Fame or defame event detected, updating token's metadata");
+  async handleDefame({ tokenId, ...eventData }: PillFameData) {
+    console.log('Defame event detected, updating token metadata');
+    // Check if the event has already been indexed by checking transactionHash and eventIndex
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('defame event already indexed');
+      return;
+    }
+    const result = await this.prismaService.event.create({
+      data: {
+        transactionHash: eventData.transactionHash,
+        blockNumber: eventData.blockNumber,
+        timestamp: eventData.timestamp,
+        eventIndex: eventData.eventIndex,
+        tokenId,
+        to: eventData.voter,
+        Defame: {
+          create: {
+            voter: eventData.voter,
+            amount: eventData.amount,
+          },
+        },
+        eventType: EventType.DEFAME,
+      },
+      include: {
+        Defame: true,
+      },
+    });
+    this.metadataService.queueIndexMetadata(tokenId);
+  }
+
+  async handleFame({ tokenId, ...eventData }: PillFameData) {
+    console.log('Fame event detected, updating token metadata');
+    // Check if the event has already been indexed by checking transactionHash and eventIndex
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('Fame event already indexed');
+      return;
+    }
+
+    const result = await this.prismaService.event.create({
+      data: {
+        transactionHash: eventData.transactionHash,
+        blockNumber: eventData.blockNumber,
+        timestamp: eventData.timestamp,
+        eventIndex: eventData.eventIndex,
+        tokenId,
+        to: eventData.voter,
+        Fame: {
+          create: {
+            voter: eventData.voter,
+            amount: eventData.amount,
+          },
+        },
+        eventType: EventType.FAME,
+      },
+      include: {
+        Fame: true,
+      },
+    });
     this.metadataService.queueIndexMetadata(tokenId);
   }
 
@@ -245,7 +315,37 @@ export class BlocksService {
     }
   }
 
-  async handleScalarRemove({ tokenId, to, ...eventData }: ScalarRemoveData) {
+  async handleScalarRemove({
+    fromPillId,
+    tokenId,
+    to,
+    ...eventData
+  }: ScalarRemoveData) {
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('this ScalarRemove transaction has already been indexed');
+      return;
+    }
+    const result2 = await this.prismaService.event.create({
+      data: {
+        ...eventData,
+        tokenId,
+        to,
+        ScalarRemove: {
+          create: { from: fromPillId },
+        },
+        eventType: EventType.SCALAR_REMOVE,
+      },
+      include: {
+        ScalarRemove: true,
+      },
+    });
     if (
       await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
     ) {
@@ -264,7 +364,44 @@ export class BlocksService {
     //Since trait can never change their metadata, no need to queue metadata generation.
     // this.backpackMetadataService.queueIndexMetadata(tokenId);
   }
-  async handleScalarTransfer({ tokenId, ...eventData }: ScalarTransferData) {
+  async handleScalarTransfer({
+    tokenId,
+    toPillId,
+    ...eventData
+  }: ScalarTransferData) {
+    if (
+      await this.prismaService.event.findFirst({
+        where: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+        },
+      })
+    ) {
+      console.log('this ScalarTransfer transaction has already been indexed');
+      return;
+    }
+    try {
+      const result2 = await this.prismaService.event.create({
+        data: {
+          transactionHash: eventData.transactionHash,
+          eventIndex: eventData.eventIndex,
+          blockNumber: eventData.blockNumber,
+          timestamp: eventData.timestamp,
+          tokenId,
+          to: toPillId.toString(),
+          ScalarTransfer: {
+            create: { from: eventData.from },
+          },
+          eventType: EventType.SCALAR_TRANSFER,
+        },
+        include: {
+          ScalarTransfer: true,
+        },
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     if (
       await this.prismaService.backpack.findFirst({ where: { id: tokenId } })
     ) {
@@ -396,14 +533,14 @@ export class BlocksService {
   async queueIndexBlockData(blockData: IndexBlockData) {
     await this.blocksQueue.add(INDEX_BLOCK, blockData, {
       ...JOB_SETTINGS,
-      priority: blockData.data.blockNumber, // higher than other blocks and lower than mark as indexed
+      priority: blockData.data.blockNumber * 1000 + blockData.data.eventIndex, // higher than other blocks and lower than mark as indexed
     });
   }
 
   async queueMarkBlockAsIndexed(blockNumber: number) {
     await this.blocksQueue.add(MARK_BLOCK_AS_INDEXED, blockNumber, {
       ...JOB_SETTINGS,
-      priority: blockNumber + 0.5, // lower than index block data but higher than other blocks
+      priority: blockNumber * 1000 + 900, // lower than index block data but higher than other blocks
     });
   }
 

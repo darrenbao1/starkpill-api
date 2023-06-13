@@ -4,6 +4,10 @@ import { Token } from 'src/graphql/token/model/token.model';
 import { ChangeAttribute } from './changeAttribute.model';
 import { Mint } from './mint.model';
 import { Transfer } from './transfer.model';
+import { Fame } from './fame.model';
+import { Defame } from './defame.model';
+import { ScalarTransfer } from './scalarTransfer.model';
+import { ScalarRemove } from './scalarRemove.model';
 
 @ObjectType()
 export class Transaction {
@@ -31,6 +35,24 @@ export class Transaction {
 
   @Field(() => ChangeAttribute, { nullable: true })
   changeAttribute: ChangeAttribute;
+
+  @Field(() => Fame, { nullable: true })
+  fame: Fame;
+
+  @Field(() => Defame, { nullable: true })
+  defame: Defame;
+
+  @Field(() => ScalarTransfer, { nullable: true })
+  scalarTransfer: ScalarTransfer;
+
+  @Field(() => ScalarRemove, { nullable: true })
+  scalarRemove: ScalarRemove;
+
+  @Field(() => Int)
+  fameAmount: number;
+
+  @Field(() => Int)
+  defameAmount: number;
 
   @Field(() => Int)
   eventIndex: number;

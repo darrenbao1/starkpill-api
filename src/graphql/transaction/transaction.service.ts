@@ -16,6 +16,8 @@ export class TransactionService {
         ChangeAttribute: true,
         Mint: true,
         Transfer: true,
+        Fame: true,
+        Defame: true,
       },
     });
 
@@ -39,6 +41,8 @@ export class TransactionService {
         ChangeAttribute: true,
         Mint: true,
         Transfer: true,
+        Fame: true,
+        Defame: true,
       },
     });
 
@@ -79,6 +83,10 @@ export class TransactionService {
         Transfer: transactionType === TransactionType.TRANSFER,
         Mint: transactionType === TransactionType.MINT,
         ChangeAttribute: transactionType === TransactionType.CHANGE_ATTRIBUTE,
+        Fame: transactionType === TransactionType.FAME,
+        Defame: transactionType === TransactionType.DEFAME,
+        ScalarTransfer: transactionType === TransactionType.SCALAR_TRANSFER,
+        ScalarRemove: transactionType === TransactionType.SCALAR_REMOVE,
       },
     });
 
@@ -105,6 +113,30 @@ export class TransactionService {
         return {
           ...trxn.ChangeAttribute,
           callee: { address: trxn.to },
+        };
+
+      case TransactionType.FAME:
+        return {
+          ...trxn.Fame,
+          callee: { address: trxn.to },
+        };
+
+      case TransactionType.DEFAME:
+        return {
+          ...trxn.Defame,
+          callee: { address: trxn.to },
+        };
+
+      case TransactionType.SCALAR_TRANSFER:
+        return {
+          from: trxn.ScalarTransfer.from,
+          to: trxn.to,
+        };
+
+      case TransactionType.SCALAR_REMOVE:
+        return {
+          from: Number(trxn.ScalarRemove.from),
+          to: trxn.to.toString(),
         };
 
       default:

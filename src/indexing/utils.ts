@@ -136,17 +136,25 @@ export const decodeTransfer = (eventData: starknet.IFieldElement[]) => {
   };
 };
 export const decodeScalarTransfer = (eventData: starknet.IFieldElement[]) => {
+  const from = FieldElement.toHex(eventData[0]);
   const tokenId =
     FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  const toPillId =
+    FieldElement.toBigInt(eventData[3]) + FieldElement.toBigInt(eventData[4]);
   return {
+    from: convertToStandardWalletAddress(from),
     tokenId: Number(tokenId.toString()),
+    toPillId: Number(toPillId.toString()),
   };
 };
 export const decodeScalarRemove = (eventData: starknet.IFieldElement[]) => {
+  const fromPillId =
+    FieldElement.toBigInt(eventData[0]) + FieldElement.toBigInt(eventData[1]);
   const tokenId =
     FieldElement.toBigInt(eventData[2]) + FieldElement.toBigInt(eventData[3]);
   const to = FieldElement.toHex(eventData[4]);
   return {
+    fromPillId: Number(fromPillId.toString()),
     tokenId: Number(tokenId.toString()),
     to: convertToStandardWalletAddress(to.toString()),
   };
@@ -154,10 +162,14 @@ export const decodeScalarRemove = (eventData: starknet.IFieldElement[]) => {
 export const decodeFameOrDefameUpdated = (
   eventData: starknet.IFieldElement[],
 ) => {
+  const voter = FieldElement.toHex(eventData[0]);
   const tokenId =
     FieldElement.toBigInt(eventData[1]) + FieldElement.toBigInt(eventData[2]);
+  const amount = FieldElement.toHex(eventData[3]);
   return {
+    voter: convertToStandardWalletAddress(voter),
     tokenId: Number(tokenId.toString()),
+    amount: parseInt(amount, 16),
   };
 };
 export const decodePharmacyStockUpdate = (
@@ -330,14 +342,19 @@ export interface TransferData extends TrxnData {
 }
 
 export interface ScalarTransferData extends TrxnData {
+  from: string;
+  toPillId: Number;
   tokenId: number;
 }
 export interface ScalarRemoveData extends TrxnData {
   tokenId: number;
   to: string;
+  fromPillId: number;
 }
 export interface PillFameData extends TrxnData {
   tokenId: number;
+  voter: string;
+  amount: number;
 }
 export interface PharmacyStockData extends TrxnData {
   typeIndex: number;

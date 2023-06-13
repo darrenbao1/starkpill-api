@@ -14,6 +14,10 @@ enum EventType {
   MINT
   TRANSFER
   CHANGE_ATTRIBUTE
+  FAME
+  DEFAME
+  SCALAR_TRANSFER
+  SCALAR_REMOVE
 }
 
 // Should only have 1 row
@@ -46,7 +50,10 @@ model Event {
   Mint            Mint?
   ChangeAttribute ChangeAttribute?
   Transfer        Transfer?
-
+  Fame            Fame?
+  Defame          Defame?
+  ScalarTransfer ScalarTransfer?
+  ScalarRemove ScalarRemove?
   @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 
@@ -78,6 +85,40 @@ model Transfer {
   eventIndex Int
   event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
   from            String
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
+}
+
+model Fame {
+  transactionHash String 
+  eventIndex Int
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
+  voter          String
+  amount          Int
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
+}
+
+model Defame {
+  transactionHash String 
+  eventIndex Int
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
+  voter          String
+  amount          Int
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
+}
+
+model ScalarTransfer {
+  transactionHash String 
+  eventIndex Int
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
+  from            String
+  @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
+}
+
+model ScalarRemove {
+  transactionHash String 
+  eventIndex Int
+  event           Event  @relation(fields: [transactionHash,eventIndex], references: [transactionHash,eventIndex])
+  from            Int
   @@id([transactionHash, eventIndex], name: "transactionHash_eventIndex")
 }
 

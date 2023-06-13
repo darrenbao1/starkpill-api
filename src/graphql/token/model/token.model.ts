@@ -22,4 +22,10 @@ export class Token {
 
   @Field(() => Metadata)
   metadata: Metadata;
+
+  @Field(() => Int)
+  fame: number;
+
+  @Field(() => Int)
+  defame: number;
 }

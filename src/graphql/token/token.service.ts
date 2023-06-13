@@ -1,4 +1,11 @@
-import { ChangeAttribute, Mint, Transfer, Event } from '.prisma/client';
+import {
+  ChangeAttribute,
+  Mint,
+  Transfer,
+  Event,
+  Fame,
+  Defame,
+} from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaginationArgs } from '../shared/pagination.args';
@@ -13,17 +20,35 @@ export class TokenService {
       Mint: Mint;
       ChangeAttribute: ChangeAttribute;
       Transfer: Transfer;
+      Fame: Fame;
+      Defame: Defame;
     })[],
     id: number,
   ) {
     try {
-      const owner = rawTrxns[0].to; // get the first trxn as it's sorted in descending order
+      //remove all trxn that has transactionType of Fame and Defame
+      const rawTrxnsWithoutFameEvents = rawTrxns.filter(
+        (trxn) => trxn.eventType !== 'FAME' && trxn.eventType !== 'DEFAME',
+      );
+      const fameEvents = rawTrxns.filter((trxn) => trxn.eventType === 'FAME');
+      const defameEvents = rawTrxns.filter(
+        (trxn) => trxn.eventType === 'DEFAME',
+      );
+      let fame = 0;
+      //check if there is any Fame or Defame events
+      if (fameEvents.length != 0) {
+        fame = fameEvents[0].Fame.amount;
+      }
+      let defame = 0;
+      if (defameEvents.length != 0) {
+        defame = defameEvents[0].Defame.amount;
+      }
+      const owner = rawTrxnsWithoutFameEvents[0].to; // get the first trxn as it's sorted in descending order
 
       const latestChangeAttributeOrMint = rawTrxns.find(
         (trxn) =>
           trxn.eventType === 'MINT' || trxn.eventType === 'CHANGE_ATTRIBUTE',
       );
-
       const background =
         latestChangeAttributeOrMint.eventType === 'MINT'
           ? latestChangeAttributeOrMint.Mint.background
@@ -41,8 +66,11 @@ export class TokenService {
         transactions,
         background,
         ingredient,
+        fame,
+        defame,
       };
     } catch (error) {
+      console.log(error);
       const tokenId = rawTrxns[0]?.tokenId || null;
       const transactions = rawTrxns.map(formatTransaction);
       return {
@@ -51,13 +79,21 @@ export class TokenService {
         transactions,
         background: null,
         ingredient: null,
+        fame: null,
+        defame: null,
       };
     }
   }
 
   async findTokenById(tokenId: number) {
     const transactions = await this.prismaService.event.findMany({
-      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      include: {
+        ChangeAttribute: true,
+        Mint: true,
+        Transfer: true,
+        Fame: true,
+        Defame: true,
+      },
       where: { tokenId: tokenId },
       orderBy: [{ blockNumber: 'desc' }, { eventIndex: 'desc' }],
     });
@@ -67,7 +103,13 @@ export class TokenService {
 
   async findTokensById(tokenIds: number[]) {
     const transactions = await this.prismaService.event.findMany({
-      include: { ChangeAttribute: true, Mint: true, Transfer: true },
+      include: {
+        ChangeAttribute: true,
+        Mint: true,
+        Transfer: true,
+        Fame: true,
+        Defame: true,
+      },
       where: {
         tokenId: {
           in: tokenIds,
@@ -85,25 +127,6 @@ export class TokenService {
       this.getTokenDetails(trxns, trxns[0].tokenId),
     );
   }
-  // Find all tokens that have been minted (roy's method)
-  // async findAllTokens(paginationArgs: PaginationArgs) {
-  //   const tokenIds = await this.prismaService.mint.findMany({
-  //     take: paginationArgs.first,
-  //     skip: paginationArgs.skip,
-  //     include: {
-  //       event: true,
-  //     },
-  //     orderBy: [{
-  //       mintPrice: 'desc'
-  //     },{
-  //       event:
-  //       {tokenId: "asc"}
-  //     }]
-  //   });
-
-  //   return this.findTokensById(tokenIds.map((token) => token.event.tokenId));
-  // }
-  //new find all tokens function using darren method
   async findAllTokensForSourceOfTruth() {
     const tokenIds = await this.prismaService.mint.findMany({
       include: {

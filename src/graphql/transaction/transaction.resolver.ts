@@ -10,6 +10,10 @@ import { Mint } from './model/mint.model';
 import { Transaction } from './model/transaction.model';
 import { Transfer } from './model/transfer.model';
 import { TransactionService } from './transaction.service';
+import { Fame } from './model/fame.model';
+import { Defame } from './model/defame.model';
+import { ScalarTransfer } from './model/scalarTransfer.model';
+import { ScalarRemove } from './model/scalarRemove.model';
 
 @Resolver(() => Transaction)
 export class TransactionResolver {
@@ -64,6 +68,38 @@ export class TransactionResolver {
     );
   }
 
+  @ResolveField(() => Fame)
+  async fame(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.FAME,
+    );
+  }
+
+  @ResolveField(() => Defame)
+  async defame(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.DEFAME,
+    );
+  }
+
+  @ResolveField(() => ScalarTransfer)
+  async scalarTransfer(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.SCALAR_TRANSFER,
+    );
+  }
+
+  @ResolveField(() => ScalarRemove)
+  async scalarRemove(@Parent() transaction: Transaction) {
+    return this.transactionService.findSpecificTransactions(
+      transaction,
+      TransactionType.SCALAR_REMOVE,
+    );
+  }
+
   @ResolveField(() => Token)
   async token(
     @Parent() transaction: Transaction,
@@ -74,5 +110,93 @@ export class TransactionResolver {
     }
 
     return this.tokenService.findTokenById(transaction.token.id);
+  }
+
+  @ResolveField(() => Number)
+  async fameAmount(@Parent() transaction: Transaction) {
+    if (transaction.transactionType !== TransactionType.FAME) {
+      return 0;
+    }
+    const transactionWithFame = await this.prismaService.event.findFirst({
+      where: {
+        transactionHash: transaction.hash,
+        eventIndex: transaction.eventIndex,
+      },
+      include: {
+        Fame: true,
+      },
+    });
+    const allFameTxForPill = await this.prismaService.event.findMany({
+      where: {
+        tokenId: transaction.token.id,
+        eventType: 'FAME',
+      },
+      orderBy: [{ blockNumber: 'asc' }, { eventIndex: 'asc' }],
+      include: {
+        Fame: true,
+      },
+    });
+    //find the index of the transaction in allFameTxForPill
+    const index = allFameTxForPill.findIndex(
+      (tx) =>
+        tx.transactionHash === transaction.hash &&
+        tx.eventIndex === transaction.eventIndex,
+    );
+    if (index === -1) {
+      throw new Error('Transaction not found in allFameTxForPill');
+    }
+    if (index === 0) {
+      return transactionWithFame.Fame.amount;
+    }
+    if (index > 0) {
+      return (
+        transactionWithFame.Fame.amount -
+        allFameTxForPill[index - 1].Fame.amount
+      );
+    }
+  }
+
+  @ResolveField(() => Number)
+  async defameAmount(@Parent() transaction: Transaction) {
+    if (transaction.transactionType !== TransactionType.DEFAME) {
+      return 0;
+    }
+    const transactionWithDefame = await this.prismaService.event.findFirst({
+      where: {
+        transactionHash: transaction.hash,
+        eventIndex: transaction.eventIndex,
+      },
+      include: {
+        Defame: true,
+      },
+    });
+    const allFameTxForPill = await this.prismaService.event.findMany({
+      where: {
+        tokenId: transaction.token.id,
+        eventType: 'DEFAME',
+      },
+      orderBy: [{ blockNumber: 'asc' }, { eventIndex: 'asc' }],
+      include: {
+        Defame: true,
+      },
+    });
+    //find the index of the transaction in allFameTxForPill
+    const index = allFameTxForPill.findIndex(
+      (tx) =>
+        tx.transactionHash === transaction.hash &&
+        tx.eventIndex === transaction.eventIndex,
+    );
+    if (index === -1) {
+      throw new Error('Transaction not found in allFameTxForPill');
+    }
+    if (index === 0) {
+      return transactionWithDefame.Defame.amount;
+    }
+    if (index > 0) {
+      return (
+        transactionWithDefame.Defame.amount -
+        allFameTxForPill[index - 1].Defame.amount
+      );
+    }
   }
 }

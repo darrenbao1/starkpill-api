@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Token } from '../../token/model/token.model';
 import { Transaction } from '../../transaction/model/transaction.model';
+import { TraitToken } from 'src/graphql/traitToken/model/traitToken.model';
 
 @ObjectType()
 export class User {
@@ -15,4 +16,10 @@ export class User {
 
   @Field(() => [Transaction])
   transactions: Transaction[];
+
+  @Field(() => [TraitToken])
+  backpackTokens: TraitToken[];
+
+  @Field(() => [TraitToken])
+  equippedTraitTokens: TraitToken[];
 }
