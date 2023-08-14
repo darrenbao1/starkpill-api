@@ -83,6 +83,33 @@ export class UserService {
     return tokenIdsOwned;
   }
 
+  async findFirstTransactionByUser(address: string) {
+    const transaction = await this.prismaService.event.findFirst({
+      where: {
+        OR: [
+          {
+            to: {
+              equals: address,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Transfer: {
+              from: {
+                equals: address,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+        eventType: { in: ['MINT', 'TRANSFER'] },
+      },
+      orderBy: [{ blockNumber: 'asc' }, { eventIndex: 'asc' }],
+    });
+
+    return formatTransaction(transaction);
+  }
+
   async findTransactionsByUser(address: string) {
     const transactions = await this.prismaService.event.findMany({
       where: {

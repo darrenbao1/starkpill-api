@@ -110,8 +110,15 @@ type User {
   transactions: [Transaction!]!
   backpackTokens: [TraitToken!]!
   equippedTraitTokens: [TraitToken!]!
+  totalFame: Int!
   getVotingPower: Int!
+  dateJoined: DateTime!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Token {
   id: Int!

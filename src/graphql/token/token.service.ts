@@ -257,6 +257,23 @@ export class TokenService {
     return results;
   }
 
+  async getTotalFameOfPills(tokenIds: number[]) {
+    const result = await this.findTokensById(tokenIds);
+    const fame = result.map((token) => {
+      if (token.fame !== null) {
+        return token.fame;
+      }
+    });
+    const defame = result.map((token) => {
+      if (token.defame !== null) {
+        return token.defame;
+      }
+    });
+    const totalFame = fame.reduce((a, b) => a + b, 0);
+    const totalDefame = defame.reduce((a, b) => a + b, 0);
+    return totalFame - totalDefame;
+  }
+
   async getVotingPower(tokenIds: number[]) {
     const cutOffTime = new Date(
       Date.now() - 24 * 60 * 60 * 1000 - 10 * 60 * 1000,

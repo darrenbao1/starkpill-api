@@ -22,4 +22,7 @@ export class User {
 
   @Field(() => [TraitToken])
   equippedTraitTokens: TraitToken[];
+
+  @Field(() => Int)
+  totalFame: number;
 }

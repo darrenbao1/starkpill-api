@@ -135,4 +135,18 @@ export class UserResolver {
       user.address,
     );
   }
+
+  @ResolveField(() => Int)
+  async totalFame(@Parent() user: User) {
+    const pills = await this.userService.findTokenIdsOwnedByUser(user.address);
+    return await this.tokenService.getTotalFameOfPills(pills);
+  }
+
+  @ResolveField(() => Date)
+  async dateJoined(@Parent() user: User) {
+    const firstTransaction = await this.userService.findFirstTransactionByUser(
+      user.address,
+    );
+    return firstTransaction.timestamp;
+  }
 }
