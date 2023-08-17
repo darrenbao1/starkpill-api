@@ -111,8 +111,22 @@ type User {
   backpackTokens: [TraitToken!]!
   equippedTraitTokens: [TraitToken!]!
   totalFame: Int!
-  getVotingPower: Int!
   dateJoined: DateTime!
+  followers: [String!]!
+  following: [String!]!
+  followersCount: Int!
+  followingCount: Int!
+  username: String
+  twitterHandle: String
+  firstName: String
+  lastName: String
+  bio: String
+  profilePictureTokenId: Int
+  coverPictureTokenId: Int
+  ensDomain: String
+  location: String
+  websiteUrl: String
+  getVotingPower: Int!
 }
 
 """

@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Account } from '@prisma/client';
@@ -8,6 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateAccountDto } from './dto';
 import { UserService } from 'src/graphql/user/user.service';
 import { TraitTokenService } from 'src/graphql/traitToken/traitToken.service';
+import { convertToStandardWalletAddress } from 'src/indexing/utils';
 
 @Injectable()
 export class AccountService {
@@ -109,5 +111,78 @@ export class AccountService {
     delete updatedUser.createdAt;
     delete updatedUser.updatedAt;
     return updatedUser;
+  }
+
+  async getAccountByWalletAddress(walletAddress: string): Promise<Account> {
+    return await this.prismaService.account.findUnique({
+      where: {
+        walletAddress: convertToStandardWalletAddress(walletAddress),
+      },
+    });
+  }
+
+  async followUser(followerId: number, followeeWalletAddress: string) {
+    try {
+      // Use the wallet address to get the account object.
+      const followee = await this.getAccountByWalletAddress(
+        followeeWalletAddress,
+      );
+
+      if (!followee) {
+        throw new NotFoundException('User to follow not found.');
+      }
+
+      // Create the follow relationship
+      const follow = await this.prismaService.follow.create({
+        data: {
+          followerId: followerId,
+          followingId: followee.id,
+        },
+      });
+
+      return { message: 'Successfully followed: ' + followeeWalletAddress };
+    } catch (error) {
+      // Handle the error appropriately, such as logging it or throwing a custom exception.
+      throw new InternalServerErrorException(
+        'User is already following: ' + followeeWalletAddress,
+      );
+    }
+  }
+
+  async unfollowUser(followerId: number, followeeWalletAddress: string) {
+    // Use the wallet address to get the account object.
+    const followee = await this.getAccountByWalletAddress(
+      followeeWalletAddress,
+    );
+    if (!followee) {
+      throw new NotFoundException(
+        'User does not have an account: ' + followeeWalletAddress,
+      );
+    }
+    const isExistingFollow = await this.prismaService.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: followerId,
+          followingId: followee.id,
+        },
+      },
+    });
+
+    if (!isExistingFollow) {
+      throw new NotFoundException(
+        'User is not following .' + followeeWalletAddress,
+      );
+    }
+
+    await this.prismaService.follow.delete({
+      where: {
+        followerId_followingId: {
+          followerId: followerId,
+          followingId: followee.id,
+        },
+      },
+    });
+
+    return { message: 'Successfully unfollowed: ' + followeeWalletAddress };
   }
 }
