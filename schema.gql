@@ -122,10 +122,12 @@ type User {
   lastName: String
   bio: String
   profilePictureTokenId: Int
-  coverPictureTokenId: Int
+  coverPictureUrl: String
   ensDomain: String
   location: String
   websiteUrl: String
+  pos_x_CoverPicture: Int
+  pos_y_CoverPicture: Int
   getVotingPower: Int!
 }
 

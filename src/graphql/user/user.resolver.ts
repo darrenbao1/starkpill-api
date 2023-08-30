@@ -203,9 +203,9 @@ export class UserResolver {
     );
   }
 
-  @ResolveField(() => Int, { nullable: true })
-  async coverPictureTokenId(@Parent() user: User): Promise<string | null> {
-    return this.userService.getAccountInfo(user.address, 'coverPictureTokenId');
+  @ResolveField(() => String, { nullable: true })
+  async coverPictureUrl(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'coverPictureUrl');
   }
 
   @ResolveField(() => String, { nullable: true })
@@ -221,5 +221,15 @@ export class UserResolver {
   @ResolveField(() => String, { nullable: true })
   async websiteUrl(@Parent() user: User): Promise<string | null> {
     return this.userService.getAccountInfo(user.address, 'websiteUrl');
+  }
+
+  @ResolveField(() => Int, { nullable: true })
+  async pos_x_CoverPicture(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'pos_x_CoverPicture');
+  }
+
+  @ResolveField(() => Int, { nullable: true })
+  async pos_y_CoverPicture(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'pos_y_CoverPicture');
   }
 }

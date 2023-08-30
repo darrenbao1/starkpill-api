@@ -59,8 +59,8 @@ export class User {
   @Field(() => Int, { nullable: true })
   profilePictureTokenId: number | null;
 
-  @Field(() => Int, { nullable: true })
-  coverPictureTokenId: number | null;
+  @Field(() => String, { nullable: true })
+  coverPictureUrl: number | null;
 
   @Field(() => String, { nullable: true })
   ensDomain: string | null;
@@ -70,4 +70,10 @@ export class User {
 
   @Field(() => String, { nullable: true })
   websiteUrl: string | null;
+
+  @Field(() => Int, { nullable: true })
+  pos_x_CoverPicture: number | null;
+
+  @Field(() => Int, { nullable: true })
+  pos_y_CoverPicture: number | null;
 }
