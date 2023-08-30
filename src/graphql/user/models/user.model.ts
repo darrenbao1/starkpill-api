@@ -22,4 +22,52 @@ export class User {
 
   @Field(() => [TraitToken])
   equippedTraitTokens: TraitToken[];
+
+  @Field(() => Int)
+  totalFame: number;
+
+  @Field(() => Date)
+  dateJoined: Date;
+
+  @Field(() => [String])
+  followers: String[];
+
+  @Field(() => [String])
+  following: String[];
+
+  @Field(() => Int)
+  followersCount: number;
+
+  @Field(() => Int)
+  followingCount: number;
+
+  @Field(() => String, { nullable: true })
+  username: string | null;
+
+  @Field(() => String, { nullable: true })
+  twitterHandle: string | null;
+
+  @Field(() => String, { nullable: true })
+  firstName: string | null;
+
+  @Field(() => String, { nullable: true })
+  lastName: string | null;
+
+  @Field(() => String, { nullable: true })
+  bio: string | null;
+
+  @Field(() => Int, { nullable: true })
+  profilePictureTokenId: number | null;
+
+  @Field(() => Int, { nullable: true })
+  coverPictureTokenId: number | null;
+
+  @Field(() => String, { nullable: true })
+  ensDomain: string | null;
+
+  @Field(() => String, { nullable: true })
+  location: string | null;
+
+  @Field(() => String, { nullable: true })
+  websiteUrl: string | null;
 }

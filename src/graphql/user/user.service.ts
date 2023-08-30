@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { formatTransaction } from '../shared/utils';
-
+import { convertToStandardWalletAddress } from 'src/indexing/utils';
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -83,6 +83,33 @@ export class UserService {
     return tokenIdsOwned;
   }
 
+  async findFirstTransactionByUser(address: string) {
+    const transaction = await this.prismaService.event.findFirst({
+      where: {
+        OR: [
+          {
+            to: {
+              equals: address,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Transfer: {
+              from: {
+                equals: address,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+        eventType: { in: ['MINT', 'TRANSFER'] },
+      },
+      orderBy: [{ blockNumber: 'asc' }, { eventIndex: 'asc' }],
+    });
+
+    return formatTransaction(transaction);
+  }
+
   async findTransactionsByUser(address: string) {
     const transactions = await this.prismaService.event.findMany({
       where: {
@@ -109,5 +136,107 @@ export class UserService {
     });
 
     return transactions.map(formatTransaction);
+  }
+
+  async getAccountByWalletAddress(walletAddress: string) {
+    return await this.prismaService.account.findUnique({
+      where: {
+        walletAddress: convertToStandardWalletAddress(walletAddress),
+      },
+    });
+  }
+
+  async getFollowers(address: string) {
+    //Get accountId using wallet address
+    const userAccount = await this.getAccountByWalletAddress(address);
+    const followers = await this.prismaService.account.findMany({
+      where: {
+        following: {
+          some: {
+            followingId: userAccount.id,
+          },
+        },
+      },
+      select: {
+        walletAddress: true,
+      },
+    });
+
+    return followers.map((user) => user.walletAddress);
+  }
+
+  async getFollowersCount(address: string) {
+    const userAccount = await this.getAccountByWalletAddress(address);
+    const followers = await this.prismaService.account.findMany({
+      where: {
+        following: {
+          some: {
+            followingId: userAccount.id,
+          },
+        },
+      },
+      select: {
+        walletAddress: true,
+      },
+    });
+
+    return followers.length;
+  }
+
+  async getFollowing(address: string) {
+    //Get accountId using wallet address
+    const userAccount = await this.getAccountByWalletAddress(address);
+    const following = await this.prismaService.account.findMany({
+      where: {
+        followedBy: {
+          some: {
+            followerId: userAccount.id,
+          },
+        },
+      },
+      select: {
+        walletAddress: true, // Select the walletAddress field only
+      },
+    });
+
+    return following.map((user) => user.walletAddress);
+  }
+
+  async getFollowingCount(address: string) {
+    //Get accountId using wallet address
+    const userAccount = await this.getAccountByWalletAddress(address);
+    const following = await this.prismaService.account.findMany({
+      where: {
+        followedBy: {
+          some: {
+            followerId: userAccount.id,
+          },
+        },
+      },
+      select: {
+        walletAddress: true, // Select the walletAddress field only
+      },
+    });
+
+    return following.length;
+  }
+
+  async getUsername(address: string) {
+    const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount.username) {
+      return null;
+    }
+    return userAccount.username;
+  }
+
+  async getAccountInfo(address: string, attributeName: string) {
+    const userAccount = await this.getAccountByWalletAddress(address);
+
+    if (attributeName in userAccount) {
+      const attributeValue = (userAccount as any)[attributeName];
+      return attributeValue !== null ? attributeValue : null;
+    } else {
+      throw new Error(`Attribute '${attributeName}' not found.`);
+    }
   }
 }

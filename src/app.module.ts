@@ -8,7 +8,8 @@ import { GraphqlModule } from './graphql/graphql.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BlocksModule } from './queues/blocks/blocks.module';
 import { QueuesModule } from './queues/queues.module';
-
+import { AuthModule } from './auth/auth.module';
+import { AccountModule } from './account/account.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -28,7 +29,10 @@ import { QueuesModule } from './queues/queues.module';
     GraphqlModule,
     BlocksModule,
     QueuesModule,
+    AuthModule,
+    AccountModule,
   ],
   controllers: [AppController],
+  providers: [],
 })
 export class AppModule {}

@@ -164,3 +164,101 @@ model TraitRedemption {
 model KnownTraits {
   tokenId Int @id
 }
+
+model Account {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  walletAddress String @unique
+  walletAddressHash String @unique
+  email String? @unique
+  username String? @unique
+  twitterHandle String? @unique
+  firstName String?
+  lastName String?
+  bio String?
+  location String?
+  ensDomain String?
+  websiteUrl String?
+
+
+  //tokenId for PFP and Cover Picture
+  profilePictureTokenId Int?
+  coverPictureUrl String?
+  pos_x_CoverPicture Int?
+  pos_y_CoverPicture Int?
+
+
+
+  // Relations
+  posts Post[] @relation("AccountPosts")
+  likedPosts Like[] @relation("AccountLikedPosts")
+  comments Comment[] @relation("AccountComments")
+
+  followedBy    Follow[] @relation("following")
+  following     Follow[] @relation("follower")
+  @@map("accounts")
+}
+model Follow {
+  follower    Account @relation("follower", fields: [followerId], references: [id])
+  followerId  Int
+  following   Account @relation("following", fields: [followingId], references: [id])
+  followingId Int
+
+  @@id([followerId, followingId])
+
+  @@map("follows")
+}
+model Post {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  title String
+  content String
+
+  image           String?    // URL to the post image
+
+  // Relations
+  author          Account      @relation("AccountPosts", fields: [authorId], references: [id])
+  authorId        Int
+
+  likes           Like[]    @relation("PostLikes")
+
+  comments        Comment[] @relation("PostComments")
+
+  @@map("posts")
+}
+
+model Like {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  post            Post      @relation("PostLikes", fields: [postId], references: [id])
+  postId          Int
+
+  account            Account      @relation("AccountLikedPosts", fields: [accountId], references: [id])
+  accountId          Int
+
+  @@map("likes")
+}
+
+model Comment {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  text            String    // The text of the comment
+
+  // Relations
+  post            Post      @relation("PostComments", fields: [postId], references: [id])
+  postId          Int
+
+  author          Account      @relation("AccountComments", fields: [authorId], references: [id])
+  authorId        Int
+
+  @@map("comments")
+}

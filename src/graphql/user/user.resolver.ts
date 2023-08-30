@@ -135,4 +135,91 @@ export class UserResolver {
       user.address,
     );
   }
+
+  @ResolveField(() => Int)
+  async totalFame(@Parent() user: User) {
+    const pills = await this.userService.findTokenIdsOwnedByUser(user.address);
+    return await this.tokenService.getTotalFameOfPills(pills);
+  }
+
+  @ResolveField(() => Date)
+  async dateJoined(@Parent() user: User) {
+    const firstTransaction = await this.userService.findFirstTransactionByUser(
+      user.address,
+    );
+    return firstTransaction.timestamp;
+  }
+
+  @ResolveField(() => [String])
+  async followers(@Parent() user: User) {
+    return this.userService.getFollowers(user.address);
+  }
+
+  @ResolveField(() => Int)
+  async followersCount(@Parent() user: User) {
+    return this.userService.getFollowersCount(user.address);
+  }
+
+  @ResolveField(() => [String])
+  async following(@Parent() user: User) {
+    return this.userService.getFollowing(user.address);
+  }
+
+  @ResolveField(() => Int)
+  async followingCount(@Parent() user: User) {
+    return this.userService.getFollowingCount(user.address);
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async username(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'username');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async twitterHandle(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'twitterHandle');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async firstName(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'firstName');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async lastName(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'lastName');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async bio(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'bio');
+  }
+
+  @ResolveField(() => Int, { nullable: true })
+  async profilePictureTokenId(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(
+      user.address,
+      'profilePictureTokenId',
+    );
+  }
+
+  @ResolveField(() => Int, { nullable: true })
+  async coverPictureTokenId(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'coverPictureTokenId');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async ensDomain(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'ensDomain');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async location(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'location');
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async websiteUrl(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'websiteUrl');
+  }
 }

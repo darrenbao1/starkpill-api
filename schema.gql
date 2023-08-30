@@ -110,8 +110,29 @@ type User {
   transactions: [Transaction!]!
   backpackTokens: [TraitToken!]!
   equippedTraitTokens: [TraitToken!]!
+  totalFame: Int!
+  dateJoined: DateTime!
+  followers: [String!]!
+  following: [String!]!
+  followersCount: Int!
+  followingCount: Int!
+  username: String
+  twitterHandle: String
+  firstName: String
+  lastName: String
+  bio: String
+  profilePictureTokenId: Int
+  coverPictureTokenId: Int
+  ensDomain: String
+  location: String
+  websiteUrl: String
   getVotingPower: Int!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Token {
   id: Int!
