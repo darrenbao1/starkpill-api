@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { formatTransaction } from '../shared/utils';
 import { convertToStandardWalletAddress } from 'src/indexing/utils';
+import { use } from 'passport';
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -149,7 +150,7 @@ export class UserService {
   async getFollowers(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount) {
+    if (userAccount === null) {
       return [];
     }
     const followers = await this.prismaService.account.findMany({
@@ -170,7 +171,7 @@ export class UserService {
 
   async getFollowersCount(address: string) {
     const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount) {
+    if (userAccount === null) {
       return 0;
     }
     const followers = await this.prismaService.account.findMany({
@@ -192,7 +193,7 @@ export class UserService {
   async getFollowing(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount) {
+    if (userAccount === null) {
       return [];
     }
     const following = await this.prismaService.account.findMany({
@@ -214,7 +215,7 @@ export class UserService {
   async getFollowingCount(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount) {
+    if (userAccount === null) {
       return 0;
     }
     const following = await this.prismaService.account.findMany({
@@ -235,7 +236,7 @@ export class UserService {
 
   async getAccountInfo(address: string, attributeName: string) {
     const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount) {
+    if (userAccount === null) {
       return null;
     }
 
