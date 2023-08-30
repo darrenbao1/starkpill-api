@@ -149,6 +149,9 @@ export class UserService {
   async getFollowers(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount) {
+      return [];
+    }
     const followers = await this.prismaService.account.findMany({
       where: {
         following: {
@@ -167,6 +170,9 @@ export class UserService {
 
   async getFollowersCount(address: string) {
     const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount) {
+      return 0;
+    }
     const followers = await this.prismaService.account.findMany({
       where: {
         following: {
@@ -186,6 +192,9 @@ export class UserService {
   async getFollowing(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount) {
+      return [];
+    }
     const following = await this.prismaService.account.findMany({
       where: {
         followedBy: {
@@ -205,6 +214,9 @@ export class UserService {
   async getFollowingCount(address: string) {
     //Get accountId using wallet address
     const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount) {
+      return 0;
+    }
     const following = await this.prismaService.account.findMany({
       where: {
         followedBy: {
@@ -221,16 +233,11 @@ export class UserService {
     return following.length;
   }
 
-  async getUsername(address: string) {
-    const userAccount = await this.getAccountByWalletAddress(address);
-    if (!userAccount.username) {
-      return null;
-    }
-    return userAccount.username;
-  }
-
   async getAccountInfo(address: string, attributeName: string) {
     const userAccount = await this.getAccountByWalletAddress(address);
+    if (!userAccount) {
+      return null;
+    }
 
     if (attributeName in userAccount) {
       const attributeValue = (userAccount as any)[attributeName];
