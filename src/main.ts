@@ -8,7 +8,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.enableCors({
     origin: [
-      'http://localhost:3001', // remove when in production.
+      'http://localhost:3000', // remove when in production.
       'https://starkpill.me',
       'https://www.starkpill.me',
       'https://starkpill.clinic',
