@@ -181,11 +181,13 @@ model Account {
   location String?
   ensDomain String?
   websiteUrl String?
-  
+
 
   //tokenId for PFP and Cover Picture
   profilePictureTokenId Int?
-  coverPictureTokenId Int?
+  coverPictureUrl String?
+  pos_x_CoverPicture Int?
+  pos_y_CoverPicture Int?
 
 
 

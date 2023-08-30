@@ -38,10 +38,6 @@ export class UpdateAccountDto {
   profilePictureTokenId?: number;
 
   @IsOptional()
-  @IsNumber()
-  coverPictureTokenId?: number;
-
-  @IsOptional()
   @IsString()
   ensDomain?: string;
 
