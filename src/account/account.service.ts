@@ -106,8 +106,10 @@ export class AccountService {
       followeeWalletAddress,
     );
 
-    if (!followee) {
-      throw new NotFoundException('User to follow not found.');
+    if (!followee || followee.id === followerId) {
+      throw new NotFoundException(
+        'User to follow not found/ User prohibited from following self',
+      );
     }
 
     // Create the follow relationship
@@ -129,9 +131,11 @@ export class AccountService {
     const followee = await this.getAccountByWalletAddress(
       followeeWalletAddress,
     );
-    if (!followee) {
+    if (!followee || followee.id === followerId) {
       throw new NotFoundException(
-        'User does not have an account: ' + followeeWalletAddress,
+        'User does not have an account: ' +
+          followeeWalletAddress +
+          " or can't unfollow self",
       );
     }
     const isExistingFollow = await this.prismaService.follow.findUnique({

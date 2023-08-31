@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { formatTransaction } from '../shared/utils';
 import { convertToStandardWalletAddress } from 'src/indexing/utils';
-import { use } from 'passport';
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
