@@ -12,6 +12,7 @@ import { TraitTokenService } from 'src/graphql/traitToken/traitToken.service';
 import { convertToStandardWalletAddress } from 'src/indexing/utils';
 import { v2 as cloudinaryV2, UploadApiResponse } from 'cloudinary';
 import { ConfigService } from '@nestjs/config';
+import * as bycrypt from 'bcrypt';
 @Injectable()
 export class AccountService {
   constructor(
@@ -105,11 +106,19 @@ export class AccountService {
     const followee = await this.getAccountByWalletAddress(
       followeeWalletAddress,
     );
-
-    if (!followee || followee.id === followerId) {
-      throw new NotFoundException(
-        'User to follow not found/ User prohibited from following self',
-      );
+    if (!followee) {
+      //create account for followee
+      const newAccount = await this.createAccount(followeeWalletAddress);
+      const newFollow = await this.prismaService.follow.create({
+        data: {
+          followerId: followerId,
+          followingId: newAccount.id,
+        },
+      });
+      return { message: 'Successfully followed: ' + followeeWalletAddress };
+    }
+    if (followee.id === followerId) {
+      throw new ForbiddenException('User prohibited from following self');
     }
 
     // Create the follow relationship
@@ -458,6 +467,37 @@ export class AccountService {
       return { message: 'Deleted comment' };
     } catch (error) {
       throw new InternalServerErrorException('Error deleting comment');
+    }
+  }
+  //Create account for user's that are currently not stored in the database.
+  async createAccount(address: string) {
+    //convert wallet address to standard wallet address
+    const walletAddress = convertToStandardWalletAddress(address);
+    //check if user exists in accounts table
+    const account = await this.prismaService.account.findUnique({
+      where: {
+        walletAddress: walletAddress,
+      },
+    });
+
+    if (!account) {
+      //generate hash of the wallet address and store in it db.
+      const walletAddressHash = await bycrypt.hash(walletAddress, 10);
+      //if user does not exist, create a new user in accounts table
+      try {
+        const newAccount = await this.prismaService.account.create({
+          data: {
+            walletAddress: walletAddress,
+            walletAddressHash: walletAddressHash,
+          },
+        });
+        return newAccount;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    } else {
+      return account;
     }
   }
 }
