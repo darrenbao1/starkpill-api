@@ -279,8 +279,31 @@ export class BlocksService {
 
     if (!isPill) {
       await this.handleTransferIfIsTraitOrPill({ from, ...eventData });
+    } else {
+      await this.handleTransferIfIsPill({ from, ...eventData });
     }
   }
+  //When transferring a pill, must check of the from address is using it as a profilePictureTokenId
+  //If it is, then update the profilePictureTokenId to null
+  //If it is not, then do nothing
+  async handleTransferIfIsPill({ from, ...eventData }: TransferData) {
+    //Check if the from address is using the tokenId as a profilePictureTokenId
+    const result = await this.prismaService.account.findFirst({
+      where: { profilePictureTokenId: eventData.tokenId },
+    });
+    if (result) {
+      //If it is, then update the profilePictureTokenId to null
+      const result2 = await this.prismaService.account.update({
+        where: { id: result.id },
+        data: { profilePictureTokenId: null },
+      });
+      console.log('Removing profile picture as transferred away.');
+    } else {
+      //If it is not, then do nothing
+      console.log('this is not a profile picture');
+    }
+  }
+
   async checkIfIsPill(tokenId: number) {
     //Get all events from prisma that has the tokenId
     const result = await this.prismaService.event.findMany({
