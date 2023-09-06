@@ -53,6 +53,14 @@ export class AccountController {
     );
   }
 
+  @Post('removeFollower')
+  async removeFollower(@GetUser() owner: Account, @Body() body: FollowDto) {
+    return await this.accountService.removeFollower(
+      owner.id,
+      body.walletAddress,
+    );
+  }
+
   @Post('uploadCoverPhoto')
   @UseInterceptors(FileInterceptor('image'))
   async updateCoverPhoto(

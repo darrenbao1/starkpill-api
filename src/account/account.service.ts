@@ -174,6 +174,43 @@ export class AccountService {
     return { message: 'Successfully unfollowed: ' + followeeWalletAddress };
   }
 
+  async removeFollower(ownerId: number, followerWalletAddress: string) {
+    // Use the wallet address to get the account object.
+    const follower = await this.getAccountByWalletAddress(
+      followerWalletAddress,
+    );
+    if (!follower || follower.id === ownerId) {
+      throw new NotFoundException(
+        'User does not have an account: ' +
+          followerWalletAddress +
+          " or can't remove follow self",
+      );
+    }
+    const isExistingFollow = await this.prismaService.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: follower.id,
+          followingId: ownerId,
+        },
+      },
+    });
+    if (!isExistingFollow) {
+      throw new NotFoundException('User is not following you.');
+    }
+    await this.prismaService.follow.delete({
+      where: {
+        followerId_followingId: {
+          followerId: follower.id,
+          followingId: ownerId,
+        },
+      },
+    });
+
+    return {
+      message: 'Successfully removed follower: ' + followerWalletAddress,
+    };
+  }
+
   async uploadCoverPhoto(
     walletAddress: string,
     file: Express.Multer.File,
