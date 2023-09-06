@@ -104,6 +104,7 @@ type TraitToken {
 }
 
 type User {
+  id: Int!
   address: String!
   tokens: [Token!]!
   numberOfTokensOwned: Int!

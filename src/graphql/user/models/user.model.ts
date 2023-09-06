@@ -5,6 +5,9 @@ import { TraitToken } from 'src/graphql/traitToken/model/traitToken.model';
 
 @ObjectType()
 export class User {
+  @Field(() => Int)
+  id: number;
+
   @Field(() => String)
   address: string;
 

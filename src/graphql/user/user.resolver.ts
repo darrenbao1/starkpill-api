@@ -232,4 +232,9 @@ export class UserResolver {
   async pos_y_CoverPicture(@Parent() user: User): Promise<string | null> {
     return this.userService.getAccountInfo(user.address, 'pos_y_CoverPicture');
   }
+
+  @ResolveField(() => Int, { nullable: true })
+  async id(@Parent() user: User): Promise<string | null> {
+    return this.userService.getAccountInfo(user.address, 'id');
+  }
 }
