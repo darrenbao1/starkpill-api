@@ -291,7 +291,6 @@ export class AccountService {
     try {
       const newPost = await this.prismaService.post.create({
         data: {
-          title: dto.title,
           content: dto.content,
           authorId: account.id,
           image: res.secure_url,
@@ -312,7 +311,6 @@ export class AccountService {
     try {
       const newPost = await this.prismaService.post.create({
         data: {
-          title: dto.title,
           content: dto.content,
           authorId: account.id,
         },

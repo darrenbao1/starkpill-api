@@ -215,7 +215,6 @@ model Post {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  title String
   content String
 
   image           String?    // URL to the post image

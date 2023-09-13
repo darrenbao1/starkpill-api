@@ -102,7 +102,6 @@ export class AccountController {
     // Manually validate the body data using class-validator decorators
     const createPostDto = new CreatePostDto();
 
-    createPostDto.title = body.title;
     createPostDto.content = body.content;
 
     const validationErrors = await validate(createPostDto);
