@@ -2,6 +2,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Token } from '../../token/model/token.model';
 import { Transaction } from '../../transaction/model/transaction.model';
 import { TraitToken } from 'src/graphql/traitToken/model/traitToken.model';
+import { Post } from './post.model';
 
 @ObjectType()
 export class User {
@@ -79,4 +80,7 @@ export class User {
 
   @Field(() => Int, { nullable: true })
   pos_y_CoverPicture: number | null;
+
+  @Field(() => [Post])
+  posts: Post[];
 }

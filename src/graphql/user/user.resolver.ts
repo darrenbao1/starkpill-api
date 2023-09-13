@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { BackPackMetadataWithEquipped } from '../backpackMetadata/model/backpackMetadataWithEquipped.model';
 import { TraitToken } from '../traitToken/model/traitToken.model';
 import { TraitTokenService } from '../traitToken/traitToken.service';
-
+import { Post } from './models/post.model';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
@@ -236,5 +236,10 @@ export class UserResolver {
   @ResolveField(() => Int, { nullable: true })
   async id(@Parent() user: User): Promise<string | null> {
     return this.userService.getAccountInfo(user.address, 'id');
+  }
+
+  @ResolveField(() => [Post])
+  async posts(@Parent() user: User): Promise<Post[]> {
+    return this.userService.getPosts(user.address);
   }
 }

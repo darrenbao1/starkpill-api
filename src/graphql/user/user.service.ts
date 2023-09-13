@@ -246,4 +246,17 @@ export class UserService {
       throw new Error(`Attribute '${attributeName}' not found.`);
     }
   }
+
+  async getPosts(address: string) {
+    const userAccount = await this.getAccountByWalletAddress(address);
+    if (userAccount === null) {
+      return [];
+    }
+    const posts = await this.prismaService.post.findMany({
+      where: {
+        authorId: userAccount.id,
+      },
+    });
+    return posts;
+  }
 }
