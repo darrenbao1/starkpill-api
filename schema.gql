@@ -103,6 +103,16 @@ type TraitToken {
   transactions: [Transaction!]!
 }
 
+type Post {
+  id: Int!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  content: String!
+  image: String
+  authorId: Int!
+  authorAddress: String!
+}
+
 type User {
   id: Int!
   address: String!
@@ -129,6 +139,7 @@ type User {
   websiteUrl: String
   pos_x_CoverPicture: Int
   pos_y_CoverPicture: Int
+  posts: [Post!]!
   getVotingPower: Int!
 }
 

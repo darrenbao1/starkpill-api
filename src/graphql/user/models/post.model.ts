@@ -19,4 +19,7 @@ export class Post {
 
   @Field(() => Int)
   authorId: number;
+
+  @Field(() => String)
+  authorAddress: string;
 }

@@ -249,14 +249,26 @@ export class UserService {
 
   async getPosts(address: string) {
     const userAccount = await this.getAccountByWalletAddress(address);
+
     if (userAccount === null) {
       return [];
     }
+
+    // Use Prisma to fetch posts and include author information
     const posts = await this.prismaService.post.findMany({
       where: {
         authorId: userAccount.id,
       },
+      include: {
+        author: {
+          select: {
+            walletAddress: true, // Include the walletAddress field
+          },
+        },
+      },
     });
+
+    // Return the posts with author's walletAddress
     return posts;
   }
 }
