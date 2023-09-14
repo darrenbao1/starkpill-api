@@ -295,13 +295,15 @@ export class AccountService {
       }),
     );
 
+    const gifUrls = dto.gifUrls || []; // Ensure gifUrls is an array
+    const allImageUrls = [...imageUrls, ...gifUrls]; // Combine the image URLs
     try {
       const newPost = await this.prismaService.post.create({
         data: {
           content: dto.content,
           authorId: account.id,
           images: {
-            create: imageUrls.map((imageUrl) => ({ url: imageUrl })),
+            create: allImageUrls.map((imageUrl) => ({ url: imageUrl })),
           },
         },
       });
@@ -311,7 +313,6 @@ export class AccountService {
       throw new InternalServerErrorException('Error creating post');
     }
   }
-
   async createPostWithoutImage(walletAddress: string, dto: CreatePostDto) {
     const account = await this.getAccountByWalletAddress(walletAddress);
     if (!account) {
