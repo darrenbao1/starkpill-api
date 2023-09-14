@@ -325,11 +325,10 @@ export class AccountService {
 
     // Check if dto.gifUrls exists and is not empty
     if (dto.gifUrls && dto.gifUrls.length > 0) {
-      console.log(dto.gifUrls);
       // If GIF URLs are provided, add them to the post data
       newPostData = {
         ...newPostData,
-        media: { create: dto.gifUrls.map((url) => ({ url })) },
+        images: { create: dto.gifUrls.map((url) => ({ url })) },
       };
     }
 
