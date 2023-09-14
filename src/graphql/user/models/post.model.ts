@@ -14,8 +14,8 @@ export class Post {
   @Field(() => String)
   content: string;
 
-  @Field(() => String, { nullable: true })
-  image: string | null;
+  @Field(() => [String], { nullable: true }) // Use an array of strings for images
+  images: string[] | null;
 
   @Field(() => Int)
   authorId: number;

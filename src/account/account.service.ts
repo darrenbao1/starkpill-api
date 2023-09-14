@@ -258,44 +258,52 @@ export class AccountService {
     return { message: 'Updated Cover Photo' };
   }
 
-  async createPostWithImage(
+  async createPostWithImages(
     walletAddress: string,
-    file: Express.Multer.File,
+    files: Express.Multer.File[],
     dto: CreatePostDto,
   ) {
     const account = await this.getAccountByWalletAddress(walletAddress);
     if (!account) {
       throw new NotFoundException('User not found');
     }
-    //upload the file to cloudinary using API
-    const res: UploadApiResponse = await new Promise((resolve, reject) => {
-      cloudinaryV2.uploader
-        .upload_stream(
-          {
-            resource_type: 'auto',
-            max_file_size: 10 * 1024 * 1024, // max file size here.
-            allowed_formats: ['jpg', 'jpeg', 'png'], //file types here.
-            folder: walletAddress, //file name
-          },
-          (error: any, result: UploadApiResponse) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          },
-        )
-        .end(file.buffer);
-    });
-
+  
+    const imageUrls = await Promise.all(
+      files.map(async (file) => {
+        // Upload each file to Cloudinary and collect the image URL
+        const res = await new Promise<UploadApiResponse>((resolve, reject) => {
+          cloudinaryV2.uploader.upload_stream(
+            {
+              resource_type: 'auto',
+              max_file_size: 10 * 1024 * 1024, // max file size here.
+              allowed_formats: ['jpg', 'jpeg', 'png'], // file types here.
+              folder: walletAddress, // file name
+            },
+            (error: any, result: UploadApiResponse) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            },
+          ).end(file.buffer);
+        });
+  
+        return res.secure_url; // Collect the image URL
+      }),
+    );
+  
     try {
       const newPost = await this.prismaService.post.create({
         data: {
           content: dto.content,
           authorId: account.id,
-          image: res.secure_url,
+          images: {
+            create: imageUrls.map((imageUrl) => ({ url: imageUrl })),
+          },
         },
       });
+  
       return newPost;
     } catch (error) {
       throw new InternalServerErrorException('Error creating post');

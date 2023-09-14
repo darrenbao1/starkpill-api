@@ -217,7 +217,7 @@ model Post {
 
   content String
 
-  image           String?    // URL to the post image
+ images          Image[]  
 
   // Relations
   author          Account      @relation("AccountPosts", fields: [authorId], references: [id])
@@ -260,4 +260,11 @@ model Comment {
   authorId        Int
 
   @@map("comments")
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  url        String
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     Int
 }

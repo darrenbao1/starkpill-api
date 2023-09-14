@@ -108,7 +108,7 @@ type Post {
   createdAt: Timestamp!
   updatedAt: Timestamp!
   content: String!
-  image: String
+  images: [String!]
   authorId: Int!
   authorAddress: String!
 }

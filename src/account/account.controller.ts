@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ import {
   UpdateAccountDto,
   UploadCoverPhotoDto,
 } from './dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { validate } from 'class-validator';
 
 @UseGuards(AuthGuard('jwt'))
@@ -93,15 +94,14 @@ export class AccountController {
   }
   //TODO ADD GIFS?
   @Post('createPost')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('images', 5)) // Allow up to 5 files (adjust as needed)
   async createPost(
     @GetUser() account: Account,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[], // Use UploadedFiles decorator
     @Body() body: any,
   ) {
     // Manually validate the body data using class-validator decorators
     const createPostDto = new CreatePostDto();
-
     createPostDto.content = body.content;
 
     const validationErrors = await validate(createPostDto);
@@ -111,16 +111,16 @@ export class AccountController {
       return { message: 'Validation failed', errors: validationErrors };
     }
 
-    if (!file) {
+    if (!files || files.length === 0) {
       return await this.accountService.createPostWithoutImage(
         account.walletAddress,
         createPostDto,
       );
     }
 
-    return await this.accountService.createPostWithImage(
+    return await this.accountService.createPostWithImages(
       account.walletAddress,
-      file,
+      files,
       createPostDto,
     );
   }

@@ -265,10 +265,24 @@ export class UserService {
             walletAddress: true, // Include the walletAddress field
           },
         },
+        images: {
+          // Include the 'images' relation to fetch associated images
+          select: {
+            url: true, // Include the 'url' field from the 'Image' model
+          },
+        },
       },
     });
 
     // Return the posts with author's walletAddress
-    return posts;
+    return posts.map((post) => ({
+      id: post.id,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      content: post.content,
+      images: post.images.map((image) => image.url), // Extract the 'url' field from images
+      authorId: post.authorId,
+      authorAddress: post.author.walletAddress,
+    }));
   }
 }

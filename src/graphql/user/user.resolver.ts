@@ -241,15 +241,6 @@ export class UserResolver {
   @ResolveField(() => [Post])
   async posts(@Parent() user: User): Promise<Post[]> {
     const posts = await this.userService.getPosts(user.address);
-    // Here, you populate the authorWalletAddress field
-    return posts.map((post) => ({
-      id: post.id,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      content: post.content,
-      image: post.image,
-      authorId: post.authorId,
-      authorAddress: post.author.walletAddress,
-    }));
+    return posts;
   }
 }
