@@ -103,7 +103,7 @@ export class AccountController {
     // Manually validate the body data using class-validator decorators
     const createPostDto = new CreatePostDto();
     createPostDto.content = body.content;
-
+    createPostDto.gifUrls = body.gifUrls;
     const validationErrors = await validate(createPostDto);
 
     if (validationErrors.length > 0) {

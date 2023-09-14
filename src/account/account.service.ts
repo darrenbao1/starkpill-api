@@ -267,32 +267,34 @@ export class AccountService {
     if (!account) {
       throw new NotFoundException('User not found');
     }
-  
+
     const imageUrls = await Promise.all(
       files.map(async (file) => {
         // Upload each file to Cloudinary and collect the image URL
         const res = await new Promise<UploadApiResponse>((resolve, reject) => {
-          cloudinaryV2.uploader.upload_stream(
-            {
-              resource_type: 'auto',
-              max_file_size: 10 * 1024 * 1024, // max file size here.
-              allowed_formats: ['jpg', 'jpeg', 'png'], // file types here.
-              folder: walletAddress, // file name
-            },
-            (error: any, result: UploadApiResponse) => {
-              if (error) {
-                reject(error);
-              } else {
-                resolve(result);
-              }
-            },
-          ).end(file.buffer);
+          cloudinaryV2.uploader
+            .upload_stream(
+              {
+                resource_type: 'auto',
+                max_file_size: 10 * 1024 * 1024, // max file size here.
+                allowed_formats: ['jpg', 'jpeg', 'png'], // file types here.
+                folder: walletAddress, // file name
+              },
+              (error: any, result: UploadApiResponse) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  resolve(result);
+                }
+              },
+            )
+            .end(file.buffer);
         });
-  
+
         return res.secure_url; // Collect the image URL
       }),
     );
-  
+
     try {
       const newPost = await this.prismaService.post.create({
         data: {
@@ -303,7 +305,7 @@ export class AccountService {
           },
         },
       });
-  
+
       return newPost;
     } catch (error) {
       throw new InternalServerErrorException('Error creating post');
@@ -315,13 +317,24 @@ export class AccountService {
     if (!account) {
       throw new NotFoundException('User not found');
     }
-    //create the post
+
+    let newPostData: any = {
+      content: dto.content,
+      authorId: account.id,
+    };
+
+    // Check if dto.gifUrls exists and is not empty
+    if (dto.gifUrls && dto.gifUrls.length > 0) {
+      // If GIF URLs are provided, add them to the post data
+      newPostData = {
+        ...newPostData,
+        media: { create: dto.gifUrls.map((url) => ({ url })) },
+      };
+    }
+
     try {
       const newPost = await this.prismaService.post.create({
-        data: {
-          content: dto.content,
-          authorId: account.id,
-        },
+        data: newPostData,
       });
       return newPost;
     } catch (error) {
