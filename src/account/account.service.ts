@@ -222,19 +222,9 @@ export class AccountService {
       cloudinaryV2.uploader
         .upload_stream(
           {
-            resource_type: 'auto',
+            resource_type: 'image',
             max_file_size: 10 * 1024 * 1024, // max file size here.
-            allowed_formats: ['jpg', 'jpeg', 'png'], //file types here.
             folder: walletAddress, //file name
-            // transformation: [
-            //   {
-            //     crop: 'crop',
-            //     width: 800,
-            //     height: 400,
-            //     x: xPos,
-            //     y: yPos,
-            //   },
-            // ], //transform to a cover picture dimension. TODO.
           },
           (error: any, result: UploadApiResponse) => {
             if (error) {
