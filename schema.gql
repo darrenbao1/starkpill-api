@@ -212,6 +212,7 @@ type Query {
   user(address: String!): User!
   getEquippedIngredients(address: String!): [BackPackMetadataWithEquipped!]!
   getEquippedBackgrounds(address: String!): [BackPackMetadataWithEquipped!]!
+  postById(postId: Int!): Post!
   lastIndexedBlock: Int!
   getAllTokenIdsNotPresentInMetadata: [Int!]!
   getTokenIdsThatImageIsWrong: [Int!]!
