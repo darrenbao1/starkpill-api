@@ -261,6 +261,9 @@ export class UserService {
       select: {
         id: true,
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     return postsIds.map((post) => post.id);
