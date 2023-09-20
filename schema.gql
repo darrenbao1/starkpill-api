@@ -130,7 +130,6 @@ type Post {
   authorAddress: String!
   comments: [Comment!]!
   likes: [Like!]!
-  likedByAddressses: [String!]!
   likedByAddresses: [String!]!
 }
 

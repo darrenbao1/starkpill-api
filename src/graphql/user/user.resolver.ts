@@ -15,12 +15,14 @@ import { BackPackMetadataWithEquipped } from '../backpackMetadata/model/backpack
 import { TraitToken } from '../traitToken/model/traitToken.model';
 import { TraitTokenService } from '../traitToken/traitToken.service';
 import { Post } from './models/post.model';
+import { PostService } from './post.service';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly traitTokenService: TraitTokenService,
+    private readonly postService: PostService,
   ) {}
 
   @Query(() => User)
@@ -240,7 +242,11 @@ export class UserResolver {
 
   @ResolveField(() => [Post])
   async posts(@Parent() user: User): Promise<Post[]> {
-    const posts = await this.userService.getPosts(user.address);
-    return posts;
+    const postsIds = await this.userService.getPosts(user.address);
+    return await Promise.all(
+      postsIds.map(async (post) => {
+        return this.postService.getPostById(post);
+      }),
+    );
   }
 }

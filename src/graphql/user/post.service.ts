@@ -1,21 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Post } from './models/post.model';
 @Injectable()
 export class PostService {
   constructor(private readonly prismaService: PrismaService) {}
-  async getLikedByAddresses(postId: number): Promise<string[]> {
-    const likes = await this.prismaService.like.findMany({
+  async getPostById(id: number): Promise<Post> {
+    const result = await this.prismaService.post.findUnique({
       where: {
-        postId: postId,
+        id: id,
       },
       include: {
-        account: {
+        comments: true,
+        likes: {
+          include: {
+            account: {
+              select: {
+                walletAddress: true,
+              },
+            },
+          },
+        },
+        images: true,
+        author: {
           select: {
             walletAddress: true,
           },
         },
       },
     });
-    return likes.map((like) => like.account.walletAddress);
+    return {
+      id: result.id,
+      content: result.content,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      authorId: result.authorId,
+      authorAddress: result.author.walletAddress,
+      comments: result.comments,
+      likes: result.likes,
+      likedByAddresses: result.likes.map((like) => like.account.walletAddress),
+      images: result.images.map((image) => image.url),
+    };
   }
 }

@@ -32,5 +32,5 @@ export class Post {
   likes: Like[];
 
   @Field(() => [String])
-  likedByAddressses: string[];
+  likedByAddresses: string[];
 }

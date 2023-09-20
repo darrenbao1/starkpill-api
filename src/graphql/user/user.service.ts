@@ -254,48 +254,15 @@ export class UserService {
       return [];
     }
 
-    // Use Prisma to fetch posts and include author information
-    const posts = await this.prismaService.post.findMany({
+    const postsIds = await this.prismaService.post.findMany({
       where: {
         authorId: userAccount.id,
       },
-      include: {
-        author: {
-          select: {
-            walletAddress: true, // Include the walletAddress field
-          },
-        },
-        images: {
-          // Include the 'images' relation to fetch associated images
-          select: {
-            url: true, // Include the 'url' field from the 'Image' model
-          },
-        },
-        comments: true,
-        likes: {
-          include: {
-            account: {
-              select: {
-                walletAddress: true,
-              },
-            },
-          },
-        },
+      select: {
+        id: true,
       },
     });
 
-    // Return the posts with author's walletAddress
-    return posts.map((post) => ({
-      id: post.id,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      content: post.content,
-      images: post.images.map((image) => image.url), // Extract the 'url' field from images
-      authorId: post.authorId,
-      authorAddress: post.author.walletAddress,
-      comments: post.comments,
-      likes: post.likes,
-      likedByAddressses: post.likes.map((like) => like.account.walletAddress),
-    }));
+    return postsIds.map((post) => post.id);
   }
 }
