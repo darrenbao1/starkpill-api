@@ -1,4 +1,6 @@
 import { Field, GraphQLTimestamp, Int, ObjectType } from '@nestjs/graphql';
+import { Comment } from './comment.model';
+import { Like } from './like.model';
 
 @ObjectType()
 export class Post {
@@ -22,4 +24,13 @@ export class Post {
 
   @Field(() => String)
   authorAddress: string;
+
+  @Field(() => [Comment])
+  comments: Comment[];
+
+  @Field(() => [Like])
+  likes: Like[];
+
+  @Field(() => [String])
+  likedByAddressses: string[];
 }

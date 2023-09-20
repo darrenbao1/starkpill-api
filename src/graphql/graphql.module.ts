@@ -10,6 +10,7 @@ import { MetadataModule } from './metadata/metadata.module';
 import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
 import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.module';
 import { TraitTokenModule } from './traitToken/traitToken.module';
+import { PostModule } from './user/post.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TraitTokenModule } from './traitToken/traitToken.module';
     MetadataModule,
     PharmacyDataModule,
     BackpackMetadataModule,
+    PostModule,
   ],
   providers: [],
 })

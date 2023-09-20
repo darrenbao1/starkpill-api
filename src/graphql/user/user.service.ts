@@ -271,6 +271,16 @@ export class UserService {
             url: true, // Include the 'url' field from the 'Image' model
           },
         },
+        comments: true,
+        likes: {
+          include: {
+            account: {
+              select: {
+                walletAddress: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -283,6 +293,9 @@ export class UserService {
       images: post.images.map((image) => image.url), // Extract the 'url' field from images
       authorId: post.authorId,
       authorAddress: post.author.walletAddress,
+      comments: post.comments,
+      likes: post.likes,
+      likedByAddressses: post.likes.map((like) => like.account.walletAddress),
     }));
   }
 }

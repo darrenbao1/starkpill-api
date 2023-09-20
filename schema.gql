@@ -103,6 +103,23 @@ type TraitToken {
   transactions: [Transaction!]!
 }
 
+type Comment {
+  id: Int!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  text: String!
+  postId: Int!
+  authorId: Int!
+}
+
+type Like {
+  id: Int!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  postId: Int!
+  accountId: Int!
+}
+
 type Post {
   id: Int!
   createdAt: Timestamp!
@@ -111,6 +128,10 @@ type Post {
   images: [String!]
   authorId: Int!
   authorAddress: String!
+  comments: [Comment!]!
+  likes: [Like!]!
+  likedByAddressses: [String!]!
+  likedByAddresses: [String!]!
 }
 
 type User {
