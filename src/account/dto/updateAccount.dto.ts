@@ -14,6 +14,7 @@ export class UpdateAccountDto {
 
   @IsOptional()
   @IsString()
+  @Length(0, 20, { message: 'Bio must be between 0 and 160 characters' })
   username?: string;
 
   @IsOptional()
@@ -48,5 +49,6 @@ export class UpdateAccountDto {
 
   @IsOptional()
   @IsString()
+  @Length(0, 160, { message: 'website must be between 0 and 160 characters' })
   websiteUrl?: string;
 }
