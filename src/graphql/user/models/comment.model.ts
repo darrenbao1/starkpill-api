@@ -19,4 +19,7 @@ export class Comment {
 
   @Field(() => Int)
   authorId: number;
+
+  @Field(() => String)
+  authorAddress: string;
 }

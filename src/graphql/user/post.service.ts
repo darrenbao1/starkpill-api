@@ -10,7 +10,15 @@ export class PostService {
         id: id,
       },
       include: {
-        comments: true,
+        comments: {
+          include: {
+            author: {
+              select: {
+                walletAddress: true,
+              },
+            },
+          },
+        },
         likes: {
           include: {
             account: {
@@ -35,7 +43,10 @@ export class PostService {
       updatedAt: result.updatedAt,
       authorId: result.authorId,
       authorAddress: result.author.walletAddress,
-      comments: result.comments,
+      comments: result.comments.map((comment) => ({
+        ...comment,
+        authorAddress: comment.author.walletAddress,
+      })),
       likes: result.likes,
       likedByAddresses: result.likes.map((like) => like.account.walletAddress),
       images: result.images.map((image) => image.url),

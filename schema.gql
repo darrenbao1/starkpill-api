@@ -110,6 +110,7 @@ type Comment {
   text: String!
   postId: Int!
   authorId: Int!
+  authorAddress: String!
 }
 
 type Like {
