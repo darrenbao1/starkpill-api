@@ -348,6 +348,22 @@ export class AccountService {
     if (post.authorId !== account.id) {
       throw new ForbiddenException('User does not own this post');
     }
+    //delete all likes for the post
+    try {
+      const deletedLikes = await this.prismaService.like.deleteMany({
+        where: { postId: postId },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting likes');
+    }
+    //delete all comments for the post
+    try {
+      const deletedComments = await this.prismaService.comment.deleteMany({
+        where: { postId: postId },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting comments');
+    }
     //delete the post
     try {
       const deletedPost = await this.prismaService.post.delete({
