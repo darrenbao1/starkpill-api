@@ -13,7 +13,6 @@ async function bootstrap() {
       'https://starkpill.clinic',
       'https://www.starkpill.clinic',
       'https://starkpill.vercel.app',
-      'https://studio.apollographql.com',
     ],
   });
   await app.listen(app.get(ConfigService).get('PORT'));
