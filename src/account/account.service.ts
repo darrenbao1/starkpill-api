@@ -348,6 +348,14 @@ export class AccountService {
     if (post.authorId !== account.id) {
       throw new ForbiddenException('User does not own this post');
     }
+    //delete all images for the post
+    try {
+      const deletedImages = await this.prismaService.image.deleteMany({
+        where: { postId: postId },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error deleting images');
+    }
     //delete all likes for the post
     try {
       const deletedLikes = await this.prismaService.like.deleteMany({
