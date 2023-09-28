@@ -382,24 +382,3 @@ export type IndexBlockData =
 export function convertToStandardWalletAddress(walletAddress: string) {
   return '0x' + walletAddress.substring(2).padStart(64, '0');
 }
-export const checkIfIsTraitOrPill = async (id: number) => {
-  const provider = new Provider({ sequencer: { network: 'goerli-alpha' } });
-  const contract = new Contract(
-    testpillAbi as Abi,
-    FieldElement.toHex(CONTRACT_ADDRESS),
-    provider,
-  );
-  const contractUriRaw = await contract.call('tokenURI', [
-    uint256.bnToUint256(number.toBN(id)),
-  ]);
-  const resultArray = contractUriRaw.map((data) =>
-    number.bigNumberishArrayToHexadecimalStringArray(data),
-  );
-  const jsonMetadata = JSON.parse(
-    resultArray[0].map((json) => hex2a(json)).join(''),
-  );
-  return (
-    jsonMetadata.name.startsWith('PillBackground') ||
-    jsonMetadata.name.startsWith('PillIngredient')
-  );
-};

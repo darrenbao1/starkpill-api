@@ -11,6 +11,7 @@ import { PharmacyDataModule } from './pharmacyData/pharmacyData.module';
 import { BackpackMetadataModule } from './backpackMetadata/backpackMetadata.module';
 import { TraitTokenModule } from './traitToken/traitToken.module';
 import { PostModule } from './user/post.module';
+import { CommentModule } from './user/comment.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PostModule } from './user/post.module';
     PharmacyDataModule,
     BackpackMetadataModule,
     PostModule,
+    CommentModule,
   ],
   providers: [],
 })

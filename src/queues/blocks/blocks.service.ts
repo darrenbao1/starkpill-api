@@ -18,7 +18,6 @@ import {
   PharmacyStockData,
   PillVoteTimeStampData,
   AttributedAddedData,
-  checkIfIsTraitOrPill,
   TraitRedemptionData,
 } from 'src/indexing/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
