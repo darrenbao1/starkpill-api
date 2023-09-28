@@ -31,7 +31,6 @@ import { CommentModule } from './user/comment.module';
     PharmacyDataModule,
     BackpackMetadataModule,
     PostModule,
-    CommentModule,
   ],
   providers: [],
 })
