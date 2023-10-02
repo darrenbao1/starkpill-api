@@ -289,6 +289,7 @@ export class UserService {
         id: true,
       },
     });
+    followingAccounts.push(userAccount);
     //get all posts from following accounts
     const postsIds = await this.prismaService.post.findMany({
       take: paginationArgs.first,
