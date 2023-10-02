@@ -16,6 +16,7 @@ import { TraitToken } from '../traitToken/model/traitToken.model';
 import { TraitTokenService } from '../traitToken/traitToken.service';
 import { Post } from './models/post.model';
 import { PostService } from './post.service';
+import { PaginationArgs } from '../shared/pagination.args';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
@@ -29,6 +30,7 @@ export class UserResolver {
   user(@Args('address', { type: () => String }) address: string) {
     return { address };
   }
+
   @Query(() => [BackPackMetadataWithEquipped])
   async getEquippedIngredients(
     @Args('address', { type: () => String }) address: string,
@@ -243,6 +245,21 @@ export class UserResolver {
   @ResolveField(() => [Post])
   async posts(@Parent() user: User): Promise<Post[]> {
     const postsIds = await this.userService.getPosts(user.address);
+    return await Promise.all(
+      postsIds.map(async (post) => {
+        return this.postService.getPostById(post);
+      }),
+    );
+  }
+  @Query(() => [Post])
+  async getPostsForUser(
+    @Args() paginationArgs: PaginationArgs,
+    @Args('walletAddress') walletAddress: string,
+  ) {
+    const postsIds = await this.userService.getPostsForUser(
+      paginationArgs,
+      walletAddress,
+    );
     return await Promise.all(
       postsIds.map(async (post) => {
         return this.postService.getPostById(post);

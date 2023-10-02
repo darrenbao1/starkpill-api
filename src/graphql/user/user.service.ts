@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { formatTransaction } from '../shared/utils';
 import { convertToStandardWalletAddress } from 'src/indexing/utils';
+import { get } from 'http';
+import { PaginationArgs } from '../shared/pagination.args';
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -257,6 +259,44 @@ export class UserService {
     const postsIds = await this.prismaService.post.findMany({
       where: {
         authorId: userAccount.id,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    return postsIds.map((post) => post.id);
+  }
+  async getPostsForUser(paginationArgs: PaginationArgs, walletAddress: string) {
+    const userAccount = await this.getAccountByWalletAddress(walletAddress);
+
+    if (userAccount === null) {
+      return [];
+    }
+    //get all following accounts and then get all posts from those accounts
+    const followingAccounts = await this.prismaService.account.findMany({
+      where: {
+        followedBy: {
+          some: {
+            followerId: userAccount.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+    //get all posts from following accounts
+    const postsIds = await this.prismaService.post.findMany({
+      take: paginationArgs.first,
+      skip: paginationArgs.skip,
+      where: {
+        authorId: {
+          in: followingAccounts.map((account) => account.id),
+        },
       },
       select: {
         id: true,

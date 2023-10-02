@@ -213,6 +213,7 @@ type Query {
   user(address: String!): User!
   getEquippedIngredients(address: String!): [BackPackMetadataWithEquipped!]!
   getEquippedBackgrounds(address: String!): [BackPackMetadataWithEquipped!]!
+  getPostsForUser(skip: Int = 0, first: Int = 20, orderBy: OrderBy = DESC, walletAddress: String!): [Post!]!
   postById(postId: Int!): Post!
   lastIndexedBlock: Int!
   getAllTokenIdsNotPresentInMetadata: [Int!]!
